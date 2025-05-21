@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
+import { Toaster } from "sonner"
 
 import "./globals.css";
 
@@ -10,8 +11,8 @@ export const metadata: Metadata = {
     process.env.APP_URL
       ? `${process.env.APP_URL}`
       : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : `http://localhost:${process.env.PORT || 3000}`
+        ? `https://${process.env.VERCEL_URL}`
+        : `http://localhost:${process.env.PORT || 3000}`
   ),
   title: "shadcn/ui sidebar",
   description:
@@ -43,6 +44,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={GeistSans.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Toaster />
           {children}
         </ThemeProvider>
       </body>
