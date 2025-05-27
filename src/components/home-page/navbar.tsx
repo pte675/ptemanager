@@ -57,7 +57,9 @@ export function Navbar() {
             </Link>
             <LanguageSelector />
             <ThemeToggle />
-            <Button>Get Started</Button>
+            <Link href="https://chat.whatsapp.com/C0mnlnA1jqyKQJfPooQNi3">
+              <Button className="w-full">Join Group</Button>
+            </Link>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -102,7 +104,9 @@ export function Navbar() {
               <LanguageSelector />
             </div>
             <div className="pt-2">
-              <Button className="w-full">Get Started</Button>
+              <Link href="https://chat.whatsapp.com/C0mnlnA1jqyKQJfPooQNi3">
+                <Button className="w-full">Join Group</Button>
+              </Link>
             </div>
           </nav>
         )}

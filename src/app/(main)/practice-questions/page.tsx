@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Mic, Pencil, BookOpen, Headphones, Trophy, Clock, Calendar } from "lucide-react"
+import Link from "next/link"
 
 export default function LanguageDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
@@ -27,6 +28,46 @@ export default function LanguageDashboard() {
         hidden: { y: 20, opacity: 0 },
         show: { y: 0, opacity: 1 },
     }
+
+    const cards = [
+        {
+            title: "Speaking",
+            icon: <Mic className="h-6 w-6 text-white" />,
+            bg: "from-rose-400 to-red-500",
+            points: 3291,
+            level: 8,
+            progress: 82,
+            description: "Conversation fluency",
+        },
+        {
+            title: "Writing",
+            icon: <Pencil className="h-6 w-6 text-white" />,
+            bg: "from-blue-400 to-blue-600",
+            points: 402,
+            level: 3,
+            progress: 35,
+            description: "Written expression",
+        },
+        {
+            title: "Reading",
+            icon: <BookOpen className="h-6 w-6 text-white" />,
+            bg: "from-purple-400 to-purple-600",
+            points: 2004,
+            level: 6,
+            progress: 67,
+            description: "Comprehension skills",
+        },
+        {
+            title: "Listening",
+            icon: <Headphones className="h-6 w-6 text-white" />,
+            bg: "from-amber-300 to-amber-500",
+            points: 2016,
+            level: 7,
+            progress: 73,
+            description: "Audio comprehension",
+        },
+    ]
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
@@ -67,165 +108,46 @@ export default function LanguageDashboard() {
                             initial="hidden"
                             animate="show"
                         >
-                            {/* Speaking Card */}
-                            <motion.div variants={item}>
-                                <Card className="relative overflow-hidden border-0 shadow-lg h-full">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-rose-400 to-red-500 opacity-90" />
-                                    <CardHeader className="relative">
-                                        <div className="flex justify-between items-start">
-                                            <CardTitle className="text-white text-2xl font-bold">Speaking</CardTitle>
-                                            <div className="bg-white/20 p-2 rounded-full">
-                                                <Mic className="h-6 w-6 text-white" />
+                            {cards.map((card, idx) => (
+                                <motion.div key={card.title} variants={item}>
+                                    <Card className="relative overflow-hidden border-0 shadow-lg h-full">
+                                        <div className={`absolute inset-0 bg-gradient-to-br ${card.bg} opacity-90`} />
+                                        <CardHeader className="relative">
+                                            <div className="flex justify-between items-start">
+                                                <CardTitle className="text-white text-2xl font-bold">{card.title}</CardTitle>
+                                                <div className="bg-white/20 p-2 rounded-full">{card.icon}</div>
                                             </div>
-                                        </div>
-                                        <CardDescription className="text-white/80">Conversation fluency</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="relative">
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex justify-between items-baseline">
-                                                <span className="text-5xl font-bold text-white">3,291</span>
-                                                <span className="text-white/80 text-sm">points</span>
-                                            </div>
-                                            <div className="mt-2">
-                                                <Progress value={82} className="h-2 bg-white/20" />
-                                                <div className="flex justify-between mt-1">
-                                                    <span className="text-xs text-white/80">Level 8</span>
-                                                    <span className="text-xs text-white/80">82%</span>
+                                            <CardDescription className="text-white/80">{card.description}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="relative">
+                                            <div className="flex flex-col gap-2">
+                                                <div className="flex justify-between items-baseline">
+                                                    <span className="text-5xl font-bold text-white">{card.points.toLocaleString()}</span>
+                                                    <span className="text-white/80 text-sm">points</span>
+                                                </div>
+                                                <div className="mt-2">
+                                                    <Progress value={card.progress} className="h-2 bg-white/20" />
+                                                    <div className="flex justify-between mt-1">
+                                                        <span className="text-xs text-white/80">Level {card.level}</span>
+                                                        <span className="text-xs text-white/80">{card.progress}%</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="relative">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="w-full bg-white/20 hover:bg-white/30 text-white border-0"
-                                        >
-                                            Practice Now
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            </motion.div>
-
-                            {/* Writing Card */}
-                            <motion.div variants={item}>
-                                <Card className="relative overflow-hidden border-0 shadow-lg h-full">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-600 opacity-90" />
-                                    <CardHeader className="relative">
-                                        <div className="flex justify-between items-start">
-                                            <CardTitle className="text-white text-2xl font-bold">Writing</CardTitle>
-                                            <div className="bg-white/20 p-2 rounded-full">
-                                                <Pencil className="h-6 w-6 text-white" />
-                                            </div>
-                                        </div>
-                                        <CardDescription className="text-white/80">Written expression</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="relative">
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex justify-between items-baseline">
-                                                <span className="text-5xl font-bold text-white">402</span>
-                                                <span className="text-white/80 text-sm">points</span>
-                                            </div>
-                                            <div className="mt-2">
-                                                <Progress value={35} className="h-2 bg-white/20" />
-                                                <div className="flex justify-between mt-1">
-                                                    <span className="text-xs text-white/80">Level 3</span>
-                                                    <span className="text-xs text-white/80">35%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="relative">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="w-full bg-white/20 hover:bg-white/30 text-white border-0"
-                                        >
-                                            Practice Now
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            </motion.div>
-
-                            {/* Reading Card */}
-                            <motion.div variants={item}>
-                                <Card className="relative overflow-hidden border-0 shadow-lg h-full">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-purple-600 opacity-90" />
-                                    <CardHeader className="relative">
-                                        <div className="flex justify-between items-start">
-                                            <CardTitle className="text-white text-2xl font-bold">Reading</CardTitle>
-                                            <div className="bg-white/20 p-2 rounded-full">
-                                                <BookOpen className="h-6 w-6 text-white" />
-                                            </div>
-                                        </div>
-                                        <CardDescription className="text-white/80">Comprehension skills</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="relative">
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex justify-between items-baseline">
-                                                <span className="text-5xl font-bold text-white">2,004</span>
-                                                <span className="text-white/80 text-sm">points</span>
-                                            </div>
-                                            <div className="mt-2">
-                                                <Progress value={67} className="h-2 bg-white/20" />
-                                                <div className="flex justify-between mt-1">
-                                                    <span className="text-xs text-white/80">Level 6</span>
-                                                    <span className="text-xs text-white/80">67%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="relative">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="w-full bg-white/20 hover:bg-white/30 text-white border-0"
-                                        >
-                                            Practice Now
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            </motion.div>
-
-                            {/* Listening Card */}
-                            <motion.div variants={item}>
-                                <Card className="relative overflow-hidden border-0 shadow-lg h-full">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-500 opacity-90" />
-                                    <CardHeader className="relative">
-                                        <div className="flex justify-between items-start">
-                                            <CardTitle className="text-white text-2xl font-bold">Listening</CardTitle>
-                                            <div className="bg-white/20 p-2 rounded-full">
-                                                <Headphones className="h-6 w-6 text-white" />
-                                            </div>
-                                        </div>
-                                        <CardDescription className="text-white/80">Audio comprehension</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="relative">
-                                        <div className="flex flex-col gap-2">
-                                            <div className="flex justify-between items-baseline">
-                                                <span className="text-5xl font-bold text-white">2,016</span>
-                                                <span className="text-white/80 text-sm">points</span>
-                                            </div>
-                                            <div className="mt-2">
-                                                <Progress value={73} className="h-2 bg-white/20" />
-                                                <div className="flex justify-between mt-1">
-                                                    <span className="text-xs text-white/80">Level 7</span>
-                                                    <span className="text-xs text-white/80">73%</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                    <CardFooter className="relative">
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            className="w-full bg-white/20 hover:bg-white/30 text-white border-0"
-                                        >
-                                            Practice Now
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
-                            </motion.div>
+                                        </CardContent>
+                                        <CardFooter className="relative">
+                                            <Link href={card.title.toLocaleLowerCase()}>
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    className="w-full bg-white/20 hover:bg-white/30 text-white border-0"
+                                                >
+                                                    Practice Now
+                                                </Button>
+                                            </Link>
+                                        </CardFooter>
+                                    </Card>
+                                </motion.div>
+                            ))}
                         </motion.div>
 
                         <div className="mt-8">

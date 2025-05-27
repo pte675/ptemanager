@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import Link from "next/link"
 
-export default function PTEReadingDashboard() {
+export default function PTESpeakingDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
     const tasks: {
@@ -24,30 +24,30 @@ export default function PTEReadingDashboard() {
         accuracy: number
         color: "purple" | "indigo" | "fuchsia" | "violet" | "pink"
     }[] = [
-            { title: "MCQ - Single Answer", path: "single-mcq", completed: 176, total: 200, streak: 4, accuracy: 88, color: "purple" },
-            { title: "MCQ - Multiple Answers", path: "multiple-mcq", completed: 153, total: 200, streak: 4, accuracy: 77, color: "indigo" },
-            { title: "Re-order Paragraphs", path: "re-order", completed: 412, total: 500, streak: 85, accuracy: 82, color: "fuchsia" },
-            { title: "Fill in the Blanks", path: "fill-in-the-blanks", completed: 750, total: 800, streak: 164, accuracy: 94, color: "violet" },
-            { title: "Reading & Writing Fill in Blanks", path: "reading-and-writing-fill-in-the-blanks", completed: 513, total: 600, streak: 90, accuracy: 85, color: "pink" },
+            { title: "Read Aloud", path: "read-aloud", completed: 150, total: 200, streak: 5, accuracy: 86, color: "purple" },
+            { title: "Repeat Sentence", path: "repeat-sentence", completed: 180, total: 200, streak: 9, accuracy: 91, color: "indigo" },
+            { title: "Describe Image", path: "describe-image", completed: 132, total: 150, streak: 6, accuracy: 77, color: "fuchsia" },
+            { title: "Retell Lecture", path: "retell-lecture", completed: 98, total: 120, streak: 4, accuracy: 83, color: "violet" },
+            { title: "Short Answer Questions", path: "short-answer-questions", completed: 190, total: 200, streak: 10, accuracy: 95, color: "pink" },
         ]
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white dark:from-slate-950 dark:to-slate-900">
+        <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white dark:from-slate-950 dark:to-slate-900">
             <div className="container mx-auto px-4 py-8">
                 <header className="mb-8">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-xl">
-                                <BookOpen className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-xl">
+                                <BookOpen className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-bold text-slate-800 dark:text-white">PTE Reading</h1>
-                                <p className="text-slate-500 dark:text-slate-400">Master your reading skills for exam success</p>
+                                <h1 className="text-3xl font-bold text-slate-800 dark:text-white">PTE Speaking</h1>
+                                <p className="text-slate-500 dark:text-slate-400">Sharpen your speaking skills with real exam tasks</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <OverallScoreCard score={85} />
-                            <Button className="hidden md:flex gap-2 bg-purple-600 hover:bg-purple-700">
+                            <OverallScoreCard score={78} />
+                            <Button className="hidden md:flex gap-2 bg-yellow-600 hover:bg-yellow-700">
                                 <PlusCircle className="h-4 w-4" />
                                 New Practice
                             </Button>
@@ -65,25 +65,25 @@ export default function PTEReadingDashboard() {
                     <TabsContent value="overview" className="space-y-6">
                         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <StatsCard
-                                title="Weekly Progress"
-                                value="87%"
-                                description="You've improved by 12% this week"
+                                title="Speaking Progress"
+                                value="78%"
+                                description="Improved by 8% this week"
                                 icon={<BarChart3 className="h-5 w-5 text-emerald-500" />}
                                 trend="up"
-                                trendValue="12%"
+                                trendValue="8%"
                             />
                             <StatsCard
-                                title="Study Time"
-                                value="14.5h"
-                                description="Total time spent on reading exercises"
+                                title="Practice Time"
+                                value="10.2h"
+                                description="Total time spent on speaking tasks"
                                 icon={<Clock className="h-5 w-5 text-blue-500" />}
                                 trend="up"
-                                trendValue="2.3h"
+                                trendValue="1.5h"
                             />
                             <StatsCard
-                                title="Mastery Level"
-                                value="Advanced"
-                                description="Top 15% of all PTE students"
+                                title="Confidence Level"
+                                value="Good"
+                                description="Better than 65% of learners"
                                 icon={<Award className="h-5 w-5 text-amber-500" />}
                                 trend="same"
                                 trendValue=""
@@ -93,7 +93,7 @@ export default function PTEReadingDashboard() {
                         <section>
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Question Types</h2>
-                                <Button variant="ghost" size="sm" className="text-purple-600 dark:text-purple-400">
+                                <Button variant="ghost" size="sm" className="text-yellow-600 dark:text-yellow-400">
                                     View All <ChevronRight className="h-4 w-4 ml-1" />
                                 </Button>
                             </div>
@@ -116,36 +116,36 @@ export default function PTEReadingDashboard() {
 
                     <TabsContent value="practice">
                         <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <div className="bg-purple-100 dark:bg-purple-900/30 p-4 rounded-full mb-4">
-                                <Sparkles className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
+                                <Sparkles className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
                             </div>
                             <h3 className="text-xl font-semibold mb-2">Ready for Practice?</h3>
                             <p className="text-slate-500 dark:text-slate-400 max-w-md mb-6">
-                                Choose a question type to start practicing or take a full-length reading test
+                                Choose a speaking task or start a full mock test
                             </p>
                             <div className="flex flex-wrap gap-3 justify-center">
-                                <Button className="bg-purple-600 hover:bg-purple-700">Start Full Test</Button>
-                                <Button variant="outline">Practice Specific Skills</Button>
+                                <Button className="bg-yellow-600 hover:bg-yellow-700">Start Full Test</Button>
+                                <Button variant="outline">Practice Specific Tasks</Button>
                             </div>
                         </div>
                     </TabsContent>
 
                     <TabsContent value="analytics">
                         <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <div className="bg-purple-100 dark:bg-purple-900/30 p-4 rounded-full mb-4">
-                                <BarChart3 className="h-8 w-8 text-purple-600 dark:text-purple-400" />
+                            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-full mb-4">
+                                <BarChart3 className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
                             </div>
-                            <h3 className="text-xl font-semibold mb-2">Detailed Analytics</h3>
+                            <h3 className="text-xl font-semibold mb-2">Speaking Analytics</h3>
                             <p className="text-slate-500 dark:text-slate-400 max-w-md mb-6">
-                                Track your progress over time and identify areas for improvement
+                                Track fluency, pronunciation, and task performance over time
                             </p>
-                            <Button className="bg-purple-600 hover:bg-purple-700">View Detailed Reports</Button>
+                            <Button className="bg-yellow-600 hover:bg-yellow-700">View Reports</Button>
                         </div>
                     </TabsContent>
                 </Tabs>
 
                 <div className="md:hidden flex justify-center mt-6">
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700 flex items-center justify-center gap-2">
+                    <Button className="w-full bg-yellow-600 hover:bg-yellow-700 flex items-center justify-center gap-2">
                         <PlusCircle className="h-4 w-4" />
                         New Practice
                     </Button>
@@ -265,7 +265,7 @@ function QuestionTypeCard({
     }
 
     return (
-        <Link href={`reading/${path}`}>
+        <Link href={`speaking/${path}`}>
             <Card className="overflow-hidden border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex justify-between items-center">
@@ -295,11 +295,7 @@ function QuestionTypeCard({
                             <span className="text-xs font-medium">{accuracy}%</span>
                         </div>
 
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className={`text-xs px-2 py-1 h-auto ${colorMap[color]?.split(" ")[1]}`}
-                        >
+                        <Button variant="ghost" size="sm" className={`text-xs px-2 py-1 h-auto ${colorMap[color]?.split(" ")[1]}`}>
                             Practice
                         </Button>
                     </div>

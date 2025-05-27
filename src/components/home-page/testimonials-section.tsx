@@ -13,17 +13,17 @@ export function TestimonialsSection() {
       name: "Sarah Johnson",
       role: "Marketing Director",
       language: "Spanish",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/testmonials/testimonial-1.jpg",
       content:
         "After trying multiple language apps, PTEGoGlobal was the only one that actually got me speaking confidently. The immersive approach and personalized feedback made all the difference. I went from basic phrases to having business conversations in Spanish within 6 months.",
       rating: 5,
     },
     {
       id: 2,
-      name: "Michael Chen",
+      name: "Michael Camilo",
       role: "Software Engineer",
       language: "Japanese",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/testmonials/testimonial-2.jpg",
       content:
         "The adaptive learning system is incredible. It somehow knows exactly when I'm about to forget something and reviews it at the perfect time. I've retained so much more vocabulary compared to other methods I've tried. Now I can watch anime without subtitles!",
       rating: 5,
@@ -33,7 +33,7 @@ export function TestimonialsSection() {
       name: "Elena Petrov",
       role: "University Student",
       language: "French",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/testmonials/testimonial-3.jpg",
       content:
         "I needed to learn French quickly for my study abroad program. PTEGoGlobal's focused approach helped me achieve more in 3 months than my previous 2 years of classroom learning. The speaking practice with natives was especially valuable.",
       rating: 4,
@@ -43,7 +43,7 @@ export function TestimonialsSection() {
       name: "David Okafor",
       role: "Travel Blogger",
       language: "Portuguese",
-      image: "/placeholder.svg?height=80&width=80",
+      image: "/testmonials/testimonial-4.jpg",
       content:
         "As someone who travels constantly, I've used PTEGoGlobal to learn basics in multiple languages. The bite-sized lessons are perfect for my busy schedule, and the offline mode means I can practice even in remote locations. It's transformed my travel experiences.",
       rating: 5,
@@ -104,8 +104,8 @@ export function TestimonialsSection() {
                       <Image
                         src={testimonial.image || "/placeholder.svg"}
                         alt={testimonial.name}
-                        width={80}
-                        height={80}
+                        width={100}
+                        height={100}
                         className="rounded-full"
                       />
 
@@ -119,8 +119,8 @@ export function TestimonialsSection() {
                             <Star
                               key={i}
                               className={`h-5 w-5 ${i < testimonial.rating
-                                  ? "text-yellow-400 fill-yellow-400"
-                                  : "text-slate-300 dark:text-slate-700"
+                                ? "text-yellow-400 fill-yellow-400"
+                                : "text-slate-300 dark:text-slate-700"
                                 }`}
                             />
                           ))}

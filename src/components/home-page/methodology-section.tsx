@@ -18,7 +18,7 @@ export function MethodologySection() {
         "Builds cultural awareness",
         "Develops natural speaking patterns",
       ],
-      image: "/placeholder.svg?height=400&width=600",
+      image: "/landing-page/immersive-learning.png",
     },
     {
       id: "spaced",
@@ -31,7 +31,7 @@ export function MethodologySection() {
         "Prevents forgetting previously learned material",
         "Adapts to your personal memory patterns",
       ],
-      image: "/placeholder.svg?height=400&width=600",
+      image: "/landing-page/spaced-repetition.png",
     },
     {
       id: "adaptive",

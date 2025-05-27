@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { Mic, Pencil, BookOpen, Headphones, ArrowRight, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import Link from "next/link"
 
 export function HeroSection() {
   const [email, setEmail] = useState("")
@@ -14,14 +15,14 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 -z-10" />
+      {/* <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-slate-950 dark:to-slate-900 -z-10" /> */}
 
       {/* Animated background shapes */}
-      <div className="absolute inset-0 -z-5">
+      {/* <div className="absolute inset-0 -z-5">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-300 dark:bg-purple-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob" />
         <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-yellow-300 dark:bg-yellow-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
         <div className="absolute bottom-1/4 right-1/3 w-64 h-64 bg-pink-300 dark:bg-pink-900/20 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
-      </div>
+      </div> */}
 
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
@@ -54,14 +55,17 @@ export function HeroSection() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-12"
                 />
+
               </div>
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600"
-              >
-                Start Learning Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link href="/practice-questions">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600"
+                >
+                  Start Learning Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
             </div>
 
             <div className="flex flex-wrap justify-center lg:justify-start gap-x-8 gap-y-4">
@@ -184,17 +188,19 @@ interface SkillCardProps {
 
 function SkillCard({ name, points, icon: Icon, color, lightColor, progress }: SkillCardProps) {
   return (
-    <div className={`p-4 rounded-lg border-t-4 ${color} shadow-sm`}>
-      <div className="flex justify-between items-start mb-2">
-        <div className="font-medium text-slate-900 dark:text-white">{name}</div>
-        <div className={`${lightColor} ${color.replace("bg-", "text-")} p-1.5 rounded-full`}>
-          <Icon className="h-3.5 w-3.5" />
+    <Link href={`${name.toLowerCase()}`}>
+      <div className={`p-4 rounded-lg border-t-4 ${color} shadow-sm`}>
+        <div className="flex justify-between items-start mb-2">
+          <div className="font-medium text-slate-900 dark:text-white">{name}</div>
+          <div className={`${lightColor} ${color.replace("bg-", "text-")} p-1.5 rounded-full`}>
+            <Icon className="h-3.5 w-3.5" />
+          </div>
+        </div>
+        <div className="text-xl font-bold mb-1 text-slate-900 dark:text-white">{points.toLocaleString()}</div>
+        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mb-1">
+          <div className={`${color} h-1.5 rounded-full`} style={{ width: `${progress}%` }}></div>
         </div>
       </div>
-      <div className="text-xl font-bold mb-1 text-slate-900 dark:text-white">{points.toLocaleString()}</div>
-      <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mb-1">
-        <div className={`${color} h-1.5 rounded-full`} style={{ width: `${progress}%` }}></div>
-      </div>
-    </div>
+    </Link>
   )
 }
