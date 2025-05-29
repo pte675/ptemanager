@@ -38,6 +38,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import rawQuestions from "./multiple-mcq.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 export default function MultipleChoiceInterface() {
     const [questionIndex, setQuestionIndex] = useState(0)
@@ -348,6 +349,16 @@ export default function MultipleChoiceInterface() {
 
     return (
         <div className="container mx-auto py-6 px-4 max-w-5xl">
+            <AIChatSidebar
+                section="Listening"
+                questionType="Multiple Choice Multiple Answer"
+                instruction={`Select all correct answers. Correct answers: ${SAMPLE_QUESTION.options
+                    .filter(o => o.isCorrect)
+                    .map(o => `${o.id}) ${o.text}`)
+                    .join(", ")}`}
+                passage={SAMPLE_QUESTION.transcript}
+                userResponse={selectedOptions.map(id => `${id}) ${SAMPLE_QUESTION.options.find(o => o.id === id)?.text}`).join(", ")}
+            />
             <Card className="shadow-lg border-t-4 border-t-indigo-500 dark:border-t-indigo-400">
                 <CardHeader className="pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
@@ -458,151 +469,6 @@ export default function MultipleChoiceInterface() {
                             )}
 
                             {/* Audio Player */}
-                            <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                                <div className="flex flex-col space-y-4">
-                                    {/* Audio element (hidden) */}
-                                    <audio
-                                        ref={audioRef}
-                                        src={SAMPLE_QUESTION.audioUrl}
-                                        onTimeUpdate={handleTimeUpdate}
-                                        onEnded={() => setIsPlaying(false)}
-                                        onLoadedMetadata={() => {
-                                            if (audioRef.current) {
-                                                setDuration(audioRef.current.duration)
-                                            }
-                                        }}
-                                    />
-
-                                    {/* Waveform visualization (simulated) */}
-                                    <div className="relative h-12 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-indigo-100 dark:bg-indigo-900/30"
-                                            style={{ width: `${(currentTime / duration) * 100}%` }}
-                                        ></div>
-                                        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                                            <svg className="w-full h-8" viewBox="0 0 1200 100" preserveAspectRatio="none">
-                                                {/* Simulated waveform - in a real app, this would be generated from the actual audio */}
-                                                {Array.from({ length: 100 }).map((_, i) => {
-                                                    const height = 10 + Math.random() * 80
-                                                    return (
-                                                        <rect
-                                                            key={i}
-                                                            x={i * 12}
-                                                            y={(100 - height) / 2}
-                                                            width="6"
-                                                            height={height}
-                                                            rx="2"
-                                                            fill={i * 12 < (currentTime / duration) * 1200 ? "#6366f1" : "#cbd5e1"}
-                                                            className="dark:fill-slate-600"
-                                                        />
-                                                    )
-                                                })}
-                                            </svg>
-                                        </div>
-                                    </div>
-
-                                    {/* Playback controls */}
-                                    <div className="flex flex-col space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm font-mono">{formatTime(currentTime)}</span>
-                                            <div className="flex items-center space-x-2">
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="ghost" size="icon" onClick={restartAudio}>
-                                                                <Repeat className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Restart</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="ghost" size="icon" onClick={skipBackward}>
-                                                                <SkipBack className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Back 5s</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-
-                                                <Button
-                                                    variant="default"
-                                                    size="icon"
-                                                    className="h-10 w-10 rounded-full bg-indigo-500 hover:bg-indigo-600"
-                                                    onClick={togglePlay}
-                                                >
-                                                    {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
-                                                </Button>
-
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="ghost" size="icon" onClick={skipForward}>
-                                                                <SkipForward className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Forward 5s</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-
-                                                <div className="relative group">
-                                                    <Button variant="ghost" size="icon" onClick={toggleMute}>
-                                                        {getVolumeIcon()}
-                                                    </Button>
-                                                    <div className="absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 w-24 p-2 bg-white dark:bg-slate-800 rounded-md shadow-md z-10">
-                                                        <Slider
-                                                            value={[volume]}
-                                                            min={0}
-                                                            max={100}
-                                                            step={1}
-                                                            onValueChange={handleVolumeChange}
-                                                            className="w-full"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="relative group">
-                                                    <Button variant="ghost" size="sm" className="text-xs">
-                                                        {playbackRate}x
-                                                    </Button>
-                                                    <div className="absolute hidden group-hover:block bottom-full right-0 w-24 p-2 bg-white dark:bg-slate-800 rounded-md shadow-md z-10">
-                                                        <div className="flex flex-col space-y-1">
-                                                            {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                                                                <Button
-                                                                    key={rate}
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className={cn(
-                                                                        "text-xs justify-start",
-                                                                        playbackRate === rate && "bg-indigo-100 dark:bg-indigo-900/30",
-                                                                    )}
-                                                                    onClick={() => handlePlaybackRateChange(rate)}
-                                                                >
-                                                                    {rate}x
-                                                                </Button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <span className="text-sm font-mono">{formatTime(duration)}</span>
-                                        </div>
-
-                                        <Slider
-                                            value={[currentTime]}
-                                            min={0}
-                                            max={duration}
-                                            step={0.1}
-                                            onValueChange={handleSeek}
-                                            className="w-full"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
                             <iframe
                                 src={SAMPLE_QUESTION.audioUrl}
                                 width="100%"

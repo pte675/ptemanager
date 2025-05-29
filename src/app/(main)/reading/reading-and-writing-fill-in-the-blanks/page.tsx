@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 interface Question {
     id: number
@@ -18,6 +19,7 @@ interface Question {
         options: string[]
         correctAnswer: string
     }[]
+    rawContent: string
 }
 
 export default function QuizPage() {
@@ -60,6 +62,7 @@ export default function QuizPage() {
                     id: item.id,
                     text: modifiedText,
                     blanks,
+                    rawContent: item.content, //for ai sidebar
                 }
             })
 
@@ -229,107 +232,118 @@ export default function QuizPage() {
 
 
     return (
-        <div className="flex min-h-screen flex-col bg-gradient-to-b from-sky-50 to-white p-4">
-            <div className="container mx-auto max-w-4xl">
-                <header className="mb-8 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <BookOpen className="h-6 w-6 text-primary" />
-                        <h1 className="text-2xl font-bold text-primary">Interactive Language Quiz</h1>
-                    </div>
-                    <Badge variant="outline" className="gap-1 px-3 py-1">
-                        {currentQuestionIndex + 1}/{totalQuestions}
-                    </Badge>
-                </header>
-
-                <Card className="border-0 shadow-lg">
-                    <CardHeader className="border-b bg-muted/20 pb-4">
-                        <div className="flex items-center justify-between">
-                            <CardTitle>Fill in the Blanks</CardTitle>
-                            <Badge variant="secondary">
-                                {new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" })}
-                            </Badge>
+        <div>
+            <AIChatSidebar
+                section="PTE Reading"
+                questionType="Reading & Writing Fill in the Blanks"
+                instruction="Select the most appropriate word for each blank. Pay close attention: in the passage below, the correct options are clearly marked with an underscore (_). Only one option is correct per blank."
+                passage={questions[currentQuestionIndex].rawContent}
+                userResponse={Object.entries(selectedAnswers)
+                    .map(([blankId, answer]) => `${blankId}: ${answer}`)
+                    .join(" | ")}
+            />
+            <div className="flex min-h-screen flex-col bg-gradient-to-b from-sky-50 to-white p-4">
+                <div className="container mx-auto max-w-4xl">
+                    <header className="mb-8 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <BookOpen className="h-6 w-6 text-primary" />
+                            <h1 className="text-2xl font-bold text-primary">Interactive Language Quiz</h1>
                         </div>
-                        <CardDescription>Select the most appropriate word for each blank in the text below.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                        <div className="mb-6">
-                            <h2 className="mb-4 text-lg font-semibold">
-                                {currentQuestion.id}.{" "}
-                                {currentQuestion.id === 1
-                                    ? "Wrist Watch"
-                                    : currentQuestion.id === 2
-                                        ? "Solar Energy"
-                                        : "Artificial Intelligence"}
-                            </h2>
-                            <div className="rounded-lg bg-white p-6 shadow-sm">
-                                <p className="leading-relaxed text-gray-700">{renderText()}</p>
+                        <Badge variant="outline" className="gap-1 px-3 py-1">
+                            {currentQuestionIndex + 1}/{totalQuestions}
+                        </Badge>
+                    </header>
+
+                    <Card className="border-0 shadow-lg">
+                        <CardHeader className="border-b bg-muted/20 pb-4">
+                            <div className="flex items-center justify-between">
+                                <CardTitle>Fill in the Blanks</CardTitle>
+                                <Badge variant="secondary">
+                                    {new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                                </Badge>
                             </div>
-                        </div>
+                            <CardDescription>Select the most appropriate word for each blank in the text below.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                            <div className="mb-6">
+                                <h2 className="mb-4 text-lg font-semibold">
+                                    {currentQuestion.id}.{" "}
+                                    {currentQuestion.id === 1
+                                        ? "Wrist Watch"
+                                        : currentQuestion.id === 2
+                                            ? "Solar Energy"
+                                            : "Artificial Intelligence"}
+                                </h2>
+                                <div className="rounded-lg bg-white p-6 shadow-sm">
+                                    <p className="leading-relaxed text-gray-700">{renderText()}</p>
+                                </div>
+                            </div>
 
-                        {isSubmitted && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mt-4 rounded-lg bg-muted p-4"
-                            >
-                                <h3 className="mb-2 font-semibold">Feedback</h3>
-                                <ul className="space-y-2">
-                                    {currentQuestion.blanks.map((blank) => {
-                                        const isCorrect = selectedAnswers[blank.id] === blank.correctAnswer
-                                        return (
-                                            <li key={blank.id} className="flex items-center gap-2">
-                                                <span
-                                                    className={`flex h-6 w-6 items-center justify-center rounded-full ${isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                                                >
-                                                    {isCorrect ? "✓" : "✗"}
-                                                </span>
-                                                <span>
-                                                    {blank.id}:{" "}
-                                                    {isCorrect ? "Correct" : `Incorrect. The correct answer is "${blank.correctAnswer}"`}
-                                                </span>
-                                            </li>
-                                        )
-                                    })}
-                                </ul>
-                            </motion.div>
-                        )}
-                    </CardContent>
-                    <CardFooter className="flex flex-col border-t bg-muted/10 px-6 py-4">
-                        <Progress value={progress} className="mb-4 h-2" />
-                        <div className="flex w-full items-center justify-between">
-                            <div>
-                                <Button
-                                    variant="outline"
-                                    onClick={handlePrevious}
-                                    disabled={currentQuestionIndex === 0}
-                                    className="gap-1"
+                            {isSubmitted && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mt-4 rounded-lg bg-muted p-4"
                                 >
-                                    <ChevronLeft className="h-4 w-4" />
-                                    Previous
-                                </Button>
+                                    <h3 className="mb-2 font-semibold">Feedback</h3>
+                                    <ul className="space-y-2">
+                                        {currentQuestion.blanks.map((blank) => {
+                                            const isCorrect = selectedAnswers[blank.id] === blank.correctAnswer
+                                            return (
+                                                <li key={blank.id} className="flex items-center gap-2">
+                                                    <span
+                                                        className={`flex h-6 w-6 items-center justify-center rounded-full ${isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                                                    >
+                                                        {isCorrect ? "✓" : "✗"}
+                                                    </span>
+                                                    <span>
+                                                        {blank.id}:{" "}
+                                                        {isCorrect ? "Correct" : `Incorrect. The correct answer is "${blank.correctAnswer}"`}
+                                                    </span>
+                                                </li>
+                                            )
+                                        })}
+                                    </ul>
+                                </motion.div>
+                            )}
+                        </CardContent>
+                        <CardFooter className="flex flex-col border-t bg-muted/10 px-6 py-4">
+                            <Progress value={progress} className="mb-4 h-2" />
+                            <div className="flex w-full items-center justify-between">
+                                <div>
+                                    <Button
+                                        variant="outline"
+                                        onClick={handlePrevious}
+                                        disabled={currentQuestionIndex === 0}
+                                        className="gap-1"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                        Previous
+                                    </Button>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={handleRestart} className="gap-1">
+                                        <RotateCcw className="h-4 w-4" />
+                                        Restart
+                                    </Button>
+                                    <Button onClick={handleSubmit} className="gap-1">
+                                        {isSubmitted ? (
+                                            <>
+                                                Next
+                                                <ChevronRight className="h-4 w-4" />
+                                            </>
+                                        ) : (
+                                            <>
+                                                Submit
+                                                <Upload className="h-4 w-4" />
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </div>
-                            <div className="flex gap-2">
-                                <Button variant="outline" onClick={handleRestart} className="gap-1">
-                                    <RotateCcw className="h-4 w-4" />
-                                    Restart
-                                </Button>
-                                <Button onClick={handleSubmit} className="gap-1">
-                                    {isSubmitted ? (
-                                        <>
-                                            Next
-                                            <ChevronRight className="h-4 w-4" />
-                                        </>
-                                    ) : (
-                                        <>
-                                            Submit
-                                            <Upload className="h-4 w-4" />
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </div>
-                    </CardFooter>
-                </Card>
+                        </CardFooter>
+                    </Card>
+                </div>
             </div>
         </div>
     )

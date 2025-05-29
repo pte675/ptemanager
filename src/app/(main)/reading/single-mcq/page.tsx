@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import rawQuestions from "./single-mcq.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 interface Question {
     id: number
@@ -26,6 +27,33 @@ interface Question {
 
 const showTimer = true
 const timePerQuestion = 120
+
+const sampleQuestions: Question[] = rawQuestions.map((q: any) => {
+    const optionRegex = /\n([a-z])\)\s(.*?)(?=\n[a-z]\)|$)/gis
+    const options: { id: string; text: string }[] = []
+
+    let match
+    while ((match = optionRegex.exec(q.question)) !== null) {
+        options.push({ id: match[1], text: match[2].trim() })
+    }
+
+    const questionText = q.question.split(/\na\)/)[0].trim()
+
+    const correctAnswer = q.answer
+        .toLowerCase()
+        .trim()
+        .match(/[a-z]/)?.[0] || ""
+
+    return {
+        id: q.id,
+        category: q.title || "General",
+        text: questionText,
+        context: q.content || "",
+        options,
+        correctAnswer,
+        explanation: q.explanation || "",
+    }
+})
 
 export default function EnhancedQuiz() {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -199,6 +227,20 @@ export default function EnhancedQuiz() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8">
+            <AIChatSidebar
+                section="PTE Reading"
+                questionType="Single Answer Multiple Choice"
+                instruction={`Only one option is correct per question. The correct answer for this question is: ${currentQuestion.correctAnswer
+                    }) ${currentQuestion.options.find(o => o.id === currentQuestion.correctAnswer)?.text}`}
+                passage={`${currentQuestion.context}\n\nQuestion:\n${currentQuestion.text}\n\nOptions:\n${currentQuestion.options
+                    .map(o => `${o.id}) ${o.text}`)
+                    .join("\n")}`}
+                userResponse={
+                    selectedAnswer
+                        ? `${selectedAnswer}) ${currentQuestion.options.find(o => o.id === selectedAnswer)?.text}`
+                        : "No answer selected"
+                }
+            />
             <div className="max-w-4xl mx-auto">
                 <header className="mb-8 text-center">
                     <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
@@ -368,24 +410,3 @@ export default function EnhancedQuiz() {
         </div>
     )
 }
-
-const sampleQuestions: Question[] = rawQuestions.map((q: any) => {
-    // Split question and options using regex
-    const [questionText, ...optionLines] = q.question.split(/\na\)|\nb\)|\nc\)|\nd\)/).map((t: string) => t.trim())
-    const optionsRaw = q.question.match(/\na\)(.*?)\nb\)(.*?)\nc\)(.*?)\nd\)(.*)/s)
-
-    return {
-        id: q.id,
-        category: q.title || "General",
-        text: questionText,
-        context: q.content || "",
-        options: [
-            { id: "a", text: optionsRaw?.[1]?.trim() || "Option A" },
-            { id: "b", text: optionsRaw?.[2]?.trim() || "Option B" },
-            { id: "c", text: optionsRaw?.[3]?.trim() || "Option C" },
-            { id: "d", text: optionsRaw?.[4]?.trim() || "Option D" },
-        ],
-        correctAnswer: q.answer.replace(/[()]/g, "").toLowerCase(),
-        explanation: q.explanation || "",
-    }
-})

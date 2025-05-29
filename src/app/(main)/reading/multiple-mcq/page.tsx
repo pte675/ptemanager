@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import rawQuestions from "./multiple-mcq.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 interface Option {
     id: string
@@ -56,7 +57,7 @@ const sampleQuestions: Question[] = rawQuestions.map((q: any) => {
 })
 
 const showTimer = true
-const timePerQuestion = 120
+const timePerQuestion = 240
 
 export default function MultiSelectQuiz() {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -289,210 +290,223 @@ export default function MultiSelectQuiz() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8">
-            <div className="max-w-4xl mx-auto">
-                <header className="mb-8 text-center">
-                    <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 mb-2">
-                        Multiple Select Quiz Platform
-                    </h1>
-                    <p className="text-slate-600 max-w-2xl mx-auto">
-                        Test your knowledge with our advanced multiple-choice quiz where you can select multiple correct answers for
-                        each question.
-                    </p>
-                </header>
+        <div>
+            <AIChatSidebar
+                section="PTE Reading"
+                questionType="Multiple Select"
+                instruction={`Select at least ${minRequired} option(s).\n\nOptions: ${currentQuestion.options.map(opt => `${opt.id}) ${opt.text}`).join(" | ")}\nCorrect Answers: ${currentQuestion.correctAnswers.join(", ")}\n\n`}
+                passage={currentQuestion.context || ""}
+                userResponse={selectedAnswers.map(id => {
+                    const option = currentQuestion.options.find(opt => opt.id === id)
+                    return option?.text || ""
+                }).join("; ")}
+            />
+            <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8">
+                <div className="max-w-4xl mx-auto">
+                    <header className="mb-8 text-center">
+                        <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 mb-2">
+                            Multiple Select Quiz Platform
+                        </h1>
+                        <p className="text-slate-600 max-w-2xl mx-auto">
+                            Test your knowledge with our advanced multiple-choice quiz where you can select multiple correct answers for
+                            each question.
+                        </p>
+                    </header>
 
-                <Card className="w-full max-w-3xl mx-auto shadow-lg">
-                    <CardHeader className="relative border-b">
-                        <div className="flex justify-between items-center">
-                            <Badge variant="outline" className="px-3 py-1 text-sm">
-                                {currentQuestion.category}
-                            </Badge>
-                            <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="px-3 py-1">
-                                    {currentIndex + 1}/{totalQuestions}
+                    <Card className="w-full max-w-3xl mx-auto shadow-lg">
+                        <CardHeader className="relative border-b">
+                            <div className="flex justify-between items-center">
+                                <Badge variant="outline" className="px-3 py-1 text-sm">
+                                    {currentQuestion.category}
                                 </Badge>
-                            </div>
-                        </div>
-                        <Progress value={progress} className="h-1 absolute bottom-0 left-0 right-0" />
-                    </CardHeader>
-
-                    <CardContent className="p-6">
-                        <div className="space-y-6">
-                            {showTimer && (
-                                <div className="flex justify-end">
-                                    <Badge
-                                        variant={timeLeft < 20 ? "destructive" : "outline"}
-                                        className={cn("px-3 py-1 flex items-center gap-1", timeLeft < 20 && "animate-pulse")}
-                                    >
-                                        <Clock className="w-4 h-4" />
-                                        {formatTime(timeLeft)}
+                                <div className="flex items-center gap-2">
+                                    <Badge variant="secondary" className="px-3 py-1">
+                                        {currentIndex + 1}/{totalQuestions}
                                     </Badge>
                                 </div>
-                            )}
-
-                            <div className="bg-violet-50 border border-violet-200 rounded-lg p-4 flex items-start gap-3">
-                                <AlertCircle className="w-5 h-5 text-violet-500 flex-shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="font-medium text-violet-700">Multiple Select Question</p>
-                                    <p className="text-sm text-violet-600">
-                                        Select {currentQuestion.correctAnswers.length > 1 ? "all" : "the"} correct{" "}
-                                        {currentQuestion.correctAnswers.length > 1 ? "answers" : "answer"}.
-                                        {/* {currentQuestion.minRequired > 1 && ` (At least ${currentQuestion.minRequired} selections required)`} */}
-                                    </p>
-                                </div>
                             </div>
+                            <Progress value={progress} className="h-1 absolute bottom-0 left-0 right-0" />
+                        </CardHeader>
 
-                            {currentQuestion.context && (
-                                <div className="bg-muted/50 p-4 rounded-lg text-sm leading-relaxed">{currentQuestion.context}</div>
-                            )}
-
-                            <h3 className="text-xl font-semibold leading-tight">{currentQuestion.text}</h3>
-
-                            <div className="space-y-3 pt-2">
-                                <AnimatePresence>
-                                    {currentQuestion.options.map((option) => {
-                                        const isSelected = selectedAnswers.includes(option.id)
-                                        const isCorrect = currentQuestion.correctAnswers.includes(option.id)
-
-                                        return (
-                                            <motion.div
-                                                key={option.id}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.2 }}
-                                            >
-                                                <div
-                                                    className={cn(
-                                                        "border rounded-lg p-4 cursor-pointer transition-all",
-                                                        isSelected && !isAnswerSubmitted && "border-primary ring-1 ring-primary bg-primary/5",
-                                                        isAnswerSubmitted && isCorrect && "bg-green-50 border-green-500",
-                                                        isAnswerSubmitted && isSelected && !isCorrect && "bg-red-50 border-red-500",
-                                                        !isAnswerSubmitted && "hover:border-primary hover:bg-muted/30",
-                                                    )}
-                                                    onClick={() => handleOptionToggle(option.id)}
-                                                >
-                                                    <div className="flex items-start gap-3">
-                                                        <Checkbox
-                                                            checked={isSelected}
-                                                            onCheckedChange={() => handleOptionToggle(option.id)}
-                                                            disabled={isAnswerSubmitted}
-                                                            className={cn(
-                                                                isAnswerSubmitted &&
-                                                                isCorrect &&
-                                                                "border-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white",
-                                                                isAnswerSubmitted &&
-                                                                isSelected &&
-                                                                !isCorrect &&
-                                                                "border-red-500 data-[state=checked]:bg-red-500 data-[state=checked]:text-white",
-                                                            )}
-                                                        />
-                                                        <div className="grid gap-1.5 leading-none">
-                                                            <span className="text-base">{option.text}</span>
-                                                            {isAnswerSubmitted && (
-                                                                <div className="flex items-center mt-1">
-                                                                    {isCorrect && (
-                                                                        <Badge
-                                                                            variant="outline"
-                                                                            className="bg-green-50 text-green-700 border-green-200 text-xs"
-                                                                        >
-                                                                            Correct
-                                                                        </Badge>
-                                                                    )}
-                                                                    {isSelected && !isCorrect && (
-                                                                        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">
-                                                                            Incorrect
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        )
-                                    })}
-                                </AnimatePresence>
-                            </div>
-
-                            {selectedAnswers.length < minRequired && !isAnswerSubmitted && (
-                                <Alert variant="destructive" className="bg-amber-50 text-amber-800 border-amber-200">
-                                    <AlertDescription>
-                                        Please select at least {minRequired} {minRequired === 1 ? "option" : "options"} to continue.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-
-                            {isAnswerSubmitted && currentQuestion.explanation && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    className="bg-muted/50 p-4 rounded-lg mt-4"
-                                >
-                                    <h4 className="font-medium mb-1">Explanation:</h4>
-                                    <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
-                                </motion.div>
-                            )}
-
-                            {isAnswerSubmitted && (
-                                <div className="bg-muted/30 p-4 rounded-lg">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="font-medium">Your score for this question:</h4>
+                        <CardContent className="p-6">
+                            <div className="space-y-6">
+                                {showTimer && (
+                                    <div className="flex justify-end">
                                         <Badge
-                                            className={cn(
-                                                "px-3 py-1",
-                                                score[currentQuestion.id] > 70
-                                                    ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                                    : score[currentQuestion.id] > 40
-                                                        ? "bg-amber-100 text-amber-800 hover:bg-amber-100"
-                                                        : "bg-red-100 text-red-800 hover:bg-red-100",
-                                            )}
+                                            variant={timeLeft < 20 ? "destructive" : "outline"}
+                                            className={cn("px-3 py-1 flex items-center gap-1", timeLeft < 20 && "animate-pulse")}
                                         >
-                                            {score[currentQuestion.id] || 0}%
+                                            <Clock className="w-4 h-4" />
+                                            {formatTime(timeLeft)}
                                         </Badge>
                                     </div>
+                                )}
+
+                                <div className="bg-violet-50 border border-violet-200 rounded-lg p-4 flex items-start gap-3">
+                                    <AlertCircle className="w-5 h-5 text-violet-500 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-medium text-violet-700">Multiple Select Question</p>
+                                        <p className="text-sm text-violet-600">
+                                            Select {currentQuestion.correctAnswers.length > 1 ? "all" : "the"} correct{" "}
+                                            {currentQuestion.correctAnswers.length > 1 ? "answers" : "answer"}.
+                                            {/* {currentQuestion.minRequired > 1 && ` (At least ${currentQuestion.minRequired} selections required)`} */}
+                                        </p>
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    </CardContent>
 
-                    <CardFooter className="flex justify-between p-6 pt-2">
-                        <Button
-                            variant="outline"
-                            onClick={handlePrevious}
-                            disabled={currentIndex === 0}
-                            className="flex items-center gap-1"
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                            Previous
-                        </Button>
+                                {currentQuestion.context && (
+                                    <div className="bg-muted/50 p-4 rounded-lg text-sm leading-relaxed">{currentQuestion.context}</div>
+                                )}
 
-                        <div className="flex gap-2">
-                            {!isAnswerSubmitted ? (
-                                <Button
-                                    onClick={handleSubmit}
-                                    disabled={selectedAnswers.length < minRequired}
-                                    className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600"
-                                >
-                                    Submit Answers
-                                </Button>
-                            ) : (
-                                <Button
-                                    onClick={handleNext}
-                                    className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 flex items-center gap-1"
-                                >
-                                    {currentIndex < totalQuestions - 1 ? (
-                                        <>
-                                            Next <ChevronRight className="w-4 h-4" />
-                                        </>
-                                    ) : (
-                                        "Finish Quiz"
-                                    )}
-                                </Button>
-                            )}
-                        </div>
-                    </CardFooter>
-                </Card>
+                                <h3 className="text-xl font-semibold leading-tight">{currentQuestion.text}</h3>
+
+                                <div className="space-y-3 pt-2">
+                                    <AnimatePresence>
+                                        {currentQuestion.options.map((option) => {
+                                            const isSelected = selectedAnswers.includes(option.id)
+                                            const isCorrect = currentQuestion.correctAnswers.includes(option.id)
+
+                                            return (
+                                                <motion.div
+                                                    key={option.id}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ duration: 0.2 }}
+                                                >
+                                                    <div
+                                                        className={cn(
+                                                            "border rounded-lg p-4 cursor-pointer transition-all",
+                                                            isSelected && !isAnswerSubmitted && "border-primary ring-1 ring-primary bg-primary/5",
+                                                            isAnswerSubmitted && isCorrect && "bg-green-50 border-green-500",
+                                                            isAnswerSubmitted && isSelected && !isCorrect && "bg-red-50 border-red-500",
+                                                            !isAnswerSubmitted && "hover:border-primary hover:bg-muted/30",
+                                                        )}
+                                                        onClick={() => handleOptionToggle(option.id)}
+                                                    >
+                                                        <div className="flex items-start gap-3">
+                                                            <Checkbox
+                                                                checked={isSelected}
+                                                                onCheckedChange={() => handleOptionToggle(option.id)}
+                                                                disabled={isAnswerSubmitted}
+                                                                className={cn(
+                                                                    isAnswerSubmitted &&
+                                                                    isCorrect &&
+                                                                    "border-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white",
+                                                                    isAnswerSubmitted &&
+                                                                    isSelected &&
+                                                                    !isCorrect &&
+                                                                    "border-red-500 data-[state=checked]:bg-red-500 data-[state=checked]:text-white",
+                                                                )}
+                                                            />
+                                                            <div className="grid gap-1.5 leading-none">
+                                                                <span className="text-base">{option.text}</span>
+                                                                {isAnswerSubmitted && (
+                                                                    <div className="flex items-center mt-1">
+                                                                        {isCorrect && (
+                                                                            <Badge
+                                                                                variant="outline"
+                                                                                className="bg-green-50 text-green-700 border-green-200 text-xs"
+                                                                            >
+                                                                                Correct
+                                                                            </Badge>
+                                                                        )}
+                                                                        {isSelected && !isCorrect && (
+                                                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">
+                                                                                Incorrect
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )
+                                        })}
+                                    </AnimatePresence>
+                                </div>
+
+                                {selectedAnswers.length < minRequired && !isAnswerSubmitted && (
+                                    <Alert variant="destructive" className="bg-amber-50 text-amber-800 border-amber-200">
+                                        <AlertDescription>
+                                            Please select at least {minRequired} {minRequired === 1 ? "option" : "options"} to continue.
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
+
+                                {isAnswerSubmitted && currentQuestion.explanation && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        className="bg-muted/50 p-4 rounded-lg mt-4"
+                                    >
+                                        <h4 className="font-medium mb-1">Explanation:</h4>
+                                        <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+                                    </motion.div>
+                                )}
+
+                                {isAnswerSubmitted && (
+                                    <div className="bg-muted/30 p-4 rounded-lg">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="font-medium">Your score for this question:</h4>
+                                            <Badge
+                                                className={cn(
+                                                    "px-3 py-1",
+                                                    score[currentQuestion.id] > 70
+                                                        ? "bg-green-100 text-green-800 hover:bg-green-100"
+                                                        : score[currentQuestion.id] > 40
+                                                            ? "bg-amber-100 text-amber-800 hover:bg-amber-100"
+                                                            : "bg-red-100 text-red-800 hover:bg-red-100",
+                                                )}
+                                            >
+                                                {score[currentQuestion.id] || 0}%
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+
+                        <CardFooter className="flex justify-between p-6 pt-2">
+                            <Button
+                                variant="outline"
+                                onClick={handlePrevious}
+                                disabled={currentIndex === 0}
+                                className="flex items-center gap-1"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Previous
+                            </Button>
+
+                            <div className="flex gap-2">
+                                {!isAnswerSubmitted ? (
+                                    <Button
+                                        onClick={handleSubmit}
+                                        disabled={selectedAnswers.length < minRequired}
+                                        className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600"
+                                    >
+                                        Submit Answers
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={handleNext}
+                                        className="bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 flex items-center gap-1"
+                                    >
+                                        {currentIndex < totalQuestions - 1 ? (
+                                            <>
+                                                Next <ChevronRight className="w-4 h-4" />
+                                            </>
+                                        ) : (
+                                            "Finish Quiz"
+                                        )}
+                                    </Button>
+                                )}
+                            </div>
+                        </CardFooter>
+                    </Card>
+                </div>
             </div>
         </div>
+
     )
 }

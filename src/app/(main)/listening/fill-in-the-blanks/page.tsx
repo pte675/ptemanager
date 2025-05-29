@@ -37,6 +37,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import rawQuestions from "./fill-in-the-blanks.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 type RawQuestion = {
     id: number;
@@ -250,7 +251,7 @@ export default function ListeningFillBlanksInterface() {
 
     // Reset exercise
     const resetExercise = () => {
-        setAnswers(Array(exercise.blanks.length).fill(""))
+        // setAnswers(Array(exercise.blanks.length).fill(""))
         setShowAnswers(false)
         setHasSubmitted(false)
         setHasStarted(false)
@@ -276,28 +277,38 @@ export default function ListeningFillBlanksInterface() {
 
     // Navigate to previous question
     const handlePrevious = () => {
-        toast("Navigation", {
-            description: "Previous question would be loaded here.",
-        });
+        if (currentQuestionIndex > 0) {
+            const prevIndex = currentQuestionIndex - 1
+            const prevExercise = parseExercise(rawQuestions[prevIndex])
 
-        setProgress((prev) => Math.max(prev - 1, 1));
-    };
+            setCurrentQuestionIndex(prevIndex)
+            setExercise(prevExercise)
+            setProgress(prevIndex + 1)
+            setAnswers(Array(prevExercise.blanks.length).fill(""))
+            resetExercise()
+        } else {
+            toast("Start of questions", {
+                description: "You're already on the first question.",
+            })
+        }
+    }
 
     const handleNext = () => {
         if (currentQuestionIndex < rawQuestions.length - 1) {
             const nextIndex = currentQuestionIndex + 1
+            const nextExercise = parseExercise(rawQuestions[nextIndex])
+
             setCurrentQuestionIndex(nextIndex)
-            setExercise(parseExercise(rawQuestions[nextIndex]))
-            resetExercise()
+            setExercise(nextExercise)
             setProgress(nextIndex + 1)
-            setAnswers(Array(exercise.blanks.length).fill(""))
+            setAnswers(Array(nextExercise.blanks.length).fill("")) // ✅ Fix: use new exercise
+            resetExercise() // call after setting new exercise
         } else {
             toast("End of questions", {
                 description: "You've reached the last question.",
             })
         }
     }
-
     // Get volume icon based on volume level
     const getVolumeIcon = () => {
         if (isMuted || volume === 0) return <VolumeX className="h-4 w-4" />
@@ -365,6 +376,13 @@ export default function ListeningFillBlanksInterface() {
 
     return (
         <div className="container mx-auto py-6 px-4 max-w-5xl">
+            <AIChatSidebar
+                section="Listening"
+                questionType="Fill in the Blanks"
+                instruction={`Listen to the audio and type the missing words in each blank. Correct answers: ${exercise.blanks.map(b => b.answer).join(", ")}`}
+                passage={exercise.transcript.replace(/\[\d+\]/g, "_____")} // convert [1], [2], etc. to blanks
+                userResponse={answers.join(", ")}
+            />
             <Card className="shadow-lg border-t-4 border-t-blue-500 dark:border-t-blue-400">
                 <CardHeader className="pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
@@ -466,10 +484,8 @@ export default function ListeningFillBlanksInterface() {
                         </TabsList>
 
                         <TabsContent value="exercise" className="mt-0 space-y-4">
-                            {/* Audio Player */}
-                            <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                            {/* <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
                                 <div className="flex flex-col space-y-4">
-                                    {/* Audio element (hidden) */}
                                     <audio
                                         ref={audioRef}
                                         src={exercise.audioUrl}
@@ -482,7 +498,6 @@ export default function ListeningFillBlanksInterface() {
                                         }}
                                     />
 
-                                    {/* Waveform visualization (simulated) */}
                                     <div className="relative h-12 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
                                         <div
                                             className="absolute top-0 left-0 h-full bg-blue-100 dark:bg-blue-900/30"
@@ -490,7 +505,6 @@ export default function ListeningFillBlanksInterface() {
                                         ></div>
                                         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
                                             <svg className="w-full h-8" viewBox="0 0 1200 100" preserveAspectRatio="none">
-                                                {/* Simulated waveform - in a real app, this would be generated from the actual audio */}
                                                 {Array.from({ length: 100 }).map((_, i) => {
                                                     const height = 10 + Math.random() * 80
                                                     return (
@@ -510,7 +524,6 @@ export default function ListeningFillBlanksInterface() {
                                         </div>
                                     </div>
 
-                                    {/* Playback controls */}
                                     <div className="flex flex-col space-y-2">
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm font-mono">{formatTime(currentTime)}</span>
@@ -610,7 +623,7 @@ export default function ListeningFillBlanksInterface() {
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* iframe  */}
                             <iframe

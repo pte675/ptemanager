@@ -38,6 +38,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import rawQuestion from "./single-mcq.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 export default function SingleChoiceInterface() {
     const parseQuestion = (raw: typeof rawQuestion[number]) => {
@@ -379,7 +380,14 @@ export default function SingleChoiceInterface() {
 
     return (
         <div className="container mx-auto py-6 px-4 max-w-5xl">
-            <Card className="shadow-lg border-t-4 border-t-blue-500 dark:border-t-blue-400">
+            <AIChatSidebar
+                section="Listening"
+                questionType="Multiple Choice Single Answer"
+                instruction={`Choose the correct answer. Correct answer: ${SAMPLE_QUESTION.options.find(o => o.isCorrect)?.text}`}
+                passage={SAMPLE_QUESTION.transcript}
+                userResponse={SAMPLE_QUESTION.options.find(o => o.id === selectedOption)?.text || ""}
+            />
+            < Card className="shadow-lg border-t-4 border-t-blue-500 dark:border-t-blue-400">
                 <CardHeader className="pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                         <div className="flex items-center gap-2">
@@ -492,9 +500,8 @@ export default function SingleChoiceInterface() {
                             )}
 
                             {/* Audio Player */}
-                            <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                            {/* <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
                                 <div className="flex flex-col space-y-4">
-                                    {/* Audio element (hidden) */}
                                     <audio
                                         ref={audioRef}
                                         src={SAMPLE_QUESTION.audioUrl}
@@ -507,7 +514,6 @@ export default function SingleChoiceInterface() {
                                         }}
                                     />
 
-                                    {/* Waveform visualization (simulated) */}
                                     <div className="relative h-12 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
                                         <div
                                             className="absolute top-0 left-0 h-full bg-blue-100 dark:bg-blue-900/30"
@@ -515,7 +521,6 @@ export default function SingleChoiceInterface() {
                                         ></div>
                                         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
                                             <svg className="w-full h-8" viewBox="0 0 1200 100" preserveAspectRatio="none">
-                                                {/* Simulated waveform - in a real app, this would be generated from the actual audio */}
                                                 {Array.from({ length: 100 }).map((_, i) => {
                                                     const height = 10 + Math.random() * 80
                                                     return (
@@ -535,7 +540,6 @@ export default function SingleChoiceInterface() {
                                         </div>
                                     </div>
 
-                                    {/* Playback controls */}
                                     <div className="flex flex-col space-y-2">
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm font-mono">{formatTime(currentTime)}</span>
@@ -635,7 +639,7 @@ export default function SingleChoiceInterface() {
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                             <iframe
                                 src={SAMPLE_QUESTION.audioUrl}

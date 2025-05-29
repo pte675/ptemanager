@@ -18,6 +18,7 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar";
 
 type QuestionType = {
     id: number;
@@ -107,98 +108,109 @@ export default function FillInTheBlanks() {
     const isCorrect = userAnswers.join() === answerOrder.join();
 
     return (
-        <div className="min-h-screen p-6 bg-slate-50 text-gray-800">
-            <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow">
-                <h2 className="text-xl font-bold mb-4 text-blue-600">{currentQuestion.title}</h2>
+        <div>
+            <AIChatSidebar
+                section="Reading"
+                questionType="Fill in the blanks"
+                instruction="Drag words from the word bank into the correct blanks."
+                passage={currentQuestion.content}
+                userResponse={Object.values(blanks).filter(Boolean).join(" ")}
+            />
+            <div className="min-h-screen p-6 bg-slate-50 text-gray-800">
+                <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+                    <h2 className="text-xl font-bold mb-4 text-blue-600">{currentQuestion.title}</h2>
 
-                <p className="text-sm text-gray-600 mb-6">
-                    Drag words from the box below to the appropriate place in the text.
-                </p>
-
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                >
-                    <p className="mb-4 leading-relaxed">
-                        {paragraphParts.map((part, i) => (
-                            <span key={i}>
-                                {part}
-                                {i < answerOrder.length && (
-                                    <Droppable id={`blank-${i}`} content={blanks[`blank-${i}`]} />
-                                )}
-                            </span>
-                        ))}
+                    <p className="text-sm text-gray-600 mb-6">
+                        Drag words from the box below to the appropriate place in the text.
                     </p>
 
-                    <SortableContext items={wordBank} strategy={verticalListSortingStrategy}>
-                        <div id="bank" className="flex flex-wrap gap-2 p-3 border rounded bg-slate-100 min-h-[60px] mt-6">
-                            {wordBank.map(word => (
-                                <DraggableWord key={word} id={word} word={word} />
-                            ))}
-                        </div>
-                    </SortableContext>
-
-                    <DragOverlay>
-                        {activeId ? <DraggableWord id={activeId} word={activeId} /> : null}
-                    </DragOverlay>
-                </DndContext>
-
-                <div className="flex justify-between items-center mt-8">
-                    <button
-                        onClick={() => {
-                            const resetBlanks = Object.fromEntries(Object.keys(blanks).map(key => [key, null]));
-                            setBlanks(resetBlanks);
-                            setWordBank([...wordBank, ...Object.values(blanks).filter(Boolean) as string[]]);
-                            setSubmitted(false);
-                        }}
-                        className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
                     >
-                        Reset
-                    </button>
-
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setSubmitted(true)}
-                            disabled={!isComplete}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                        >
-                            Submit
-                        </button>
-                        {submitted && currentIndex < questions.length - 1 && (
-                            <button
-                                onClick={() => setCurrentIndex(currentIndex + 1)}
-                                className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
-                            >
-                                Next →
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {submitted && (
-                    <div className="mt-4">
-                        <p className={`font-semibold ${isCorrect ? "text-green-600" : "text-red-600"}`}>
-                            {isCorrect ? "✅ Correct!" : "❌ Incorrect. Try again or check the correct answer."}
+                        <p className="mb-4 leading-relaxed">
+                            {paragraphParts.map((part, i) => (
+                                <span key={i}>
+                                    {part}
+                                    {i < answerOrder.length && (
+                                        <Droppable id={`blank-${i}`} content={blanks[`blank-${i}`]} />
+                                    )}
+                                </span>
+                            ))}
                         </p>
 
-                        {!isCorrect && (
-                            <div className="mt-3">
-                                <h4 className="text-gray-700 font-semibold mb-1">Correct Answers:</h4>
-                                <ul className="list-decimal ml-6 text-sm text-gray-800 space-y-1">
-                                    {answerOrder.map((ans, index) => (
-                                        <li key={index}>
-                                            {ans}
-                                        </li>
-                                    ))}
-                                </ul>
+                        <SortableContext items={wordBank} strategy={verticalListSortingStrategy}>
+                            <div id="bank" className="flex flex-wrap gap-2 p-3 border rounded bg-slate-100 min-h-[60px] mt-6">
+                                {wordBank.map(word => (
+                                    <DraggableWord key={word} id={word} word={word} />
+                                ))}
                             </div>
-                        )}
+                        </SortableContext>
+
+                        <DragOverlay>
+                            {activeId ? <DraggableWord id={activeId} word={activeId} /> : null}
+                        </DragOverlay>
+                    </DndContext>
+
+                    <div className="flex justify-between items-center mt-8">
+                        <button
+                            onClick={() => {
+                                const resetBlanks = Object.fromEntries(Object.keys(blanks).map(key => [key, null]));
+                                setBlanks(resetBlanks);
+                                setWordBank([...wordBank, ...Object.values(blanks).filter(Boolean) as string[]]);
+                                setSubmitted(false);
+                            }}
+                            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                        >
+                            Reset
+                        </button>
+
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => setSubmitted(true)}
+                                disabled={!isComplete}
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                            >
+                                Submit
+                            </button>
+                            {/* {submitted && currentIndex < questions.length - 1 && ( */}
+                            {currentIndex < questions.length - 1 && (
+                                <button
+                                    onClick={() => setCurrentIndex(currentIndex + 1)}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+                                >
+                                    Next →
+                                </button>
+                            )}
+                        </div>
                     </div>
-                )}
+
+                    {submitted && (
+                        <div className="mt-4">
+                            <p className={`font-semibold ${isCorrect ? "text-green-600" : "text-red-600"}`}>
+                                {isCorrect ? "✅ Correct!" : "❌ Incorrect. Try again or check the correct answer."}
+                            </p>
+
+                            {!isCorrect && (
+                                <div className="mt-3">
+                                    <h4 className="text-gray-700 font-semibold mb-1">Correct Answers:</h4>
+                                    <ul className="list-decimal ml-6 text-sm text-gray-800 space-y-1">
+                                        {answerOrder.map((ans, index) => (
+                                            <li key={index}>
+                                                {ans}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
+
     );
 }
 

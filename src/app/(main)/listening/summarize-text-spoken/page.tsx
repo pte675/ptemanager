@@ -36,6 +36,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from 'sonner'
 import rawQuestions from "./summarize-text-spoken.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 export default function SummarizeSpokenTextInterface() {
     const [currentIndex, setcurrentIndex] = useState(0)
@@ -79,6 +80,8 @@ export default function SummarizeSpokenTextInterface() {
 
     const audioRef = useRef<HTMLAudioElement>(null)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const [evaluationResult, setEvaluationResult] = useState<{ score?: string; feedback?: string } | null>(null);
 
     // Timer effect
     useEffect(() => {
@@ -210,7 +213,7 @@ export default function SummarizeSpokenTextInterface() {
     }
 
     // Handle form submission
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (wordCount < SAMPLE_LECTURE.wordCountTarget.min || wordCount > SAMPLE_LECTURE.wordCountTarget.max) {
             toast(
                 `❗ Word count should be between ${SAMPLE_LECTURE.wordCountTarget.min}-${SAMPLE_LECTURE.wordCountTarget.max}. You wrote ${wordCount} words.`
@@ -223,10 +226,40 @@ export default function SummarizeSpokenTextInterface() {
 
         toast(`✅ Your ${wordCount}-word summary has been submitted successfully.`)
 
+        try {
+            const res = await fetch("/api/writing/essay-writing", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    prompt: SAMPLE_LECTURE.transcript,
+                    response: summaryContent.trim(),
+                }),
+            });
+
+            const result = await res.json();
+
+            setEvaluationResult(result);
+
+            toast.success("Evaluation Complete", {
+                description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,
+            });
+        } catch (err: any) {
+            toast.error("Evaluation failed. Please try again later.", {
+                description: err.message || "Unexpected error",
+            });
+
+            setEvaluationResult({
+                score: undefined,
+                feedback: "An error occurred while evaluating your summary.",
+            });
+        }
     }
 
     // Reset exercise
     const resetExercise = () => {
+        setEvaluationResult(null)
         setSummaryContent("")
         setNotesContent("")
         setShowTranscript(false)
@@ -304,6 +337,13 @@ export default function SummarizeSpokenTextInterface() {
 
     return (
         <div className="container mx-auto py-6 px-4 max-w-5xl">
+            <AIChatSidebar
+                section="listening"
+                questionType="summarize-spoken-text"
+                instruction="You will hear a short lecture. You should write 50-70 words."
+                passage={SAMPLE_LECTURE.transcript}
+                userResponse={summaryContent}
+            />
             <Card className="shadow-lg border-t-4 border-t-violet-500 dark:border-t-violet-400">
                 <CardHeader className="pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
@@ -630,6 +670,24 @@ export default function SummarizeSpokenTextInterface() {
                                     <span>Min: {SAMPLE_LECTURE.wordCountTarget.min} words</span>
                                     <span>Max: {SAMPLE_LECTURE.wordCountTarget.max} words</span>
                                 </div>
+
+                                {evaluationResult && (
+                                    <div className="p-4 rounded-xl border border-purple-300 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-white dark:from-slate-800 dark:to-slate-900 shadow-xl">
+                                        <h4 className="text-lg font-bold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">
+                                            ✅ Evaluation Result
+                                        </h4>
+                                        <div className="text-sm space-y-2 text-slate-800 dark:text-slate-300">
+                                            <p>
+                                                <strong className="text-purple-600 dark:text-purple-400">Score:</strong>{" "}
+                                                <span className="font-medium">{evaluationResult.score || "N/A"} / 5</span>
+                                            </p>
+                                            <p>
+                                                <strong className="text-purple-600 dark:text-purple-400">Feedback:</strong><br />
+                                                <span className="italic">{evaluationResult.feedback}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </TabsContent>
 

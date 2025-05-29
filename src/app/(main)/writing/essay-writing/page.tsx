@@ -29,6 +29,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import rawQuestions from "./essay-writing.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 export default function EssayWritingInterface() {
     const [activeTab, setActiveTab] = useState("write")
@@ -55,6 +56,9 @@ export default function EssayWritingInterface() {
         category: "General", // or derive from q if available
         difficulty: index % 3 === 0 ? "Easy" : index % 3 === 1 ? "Medium" : "Hard", // simple cycling
     }))
+
+    const [evaluationResult, setEvaluationResult] = useState<{ score?: string; feedback?: string } | null>(null);
+
 
     // Timer effect
     useEffect(() => {
@@ -98,9 +102,39 @@ export default function EssayWritingInterface() {
         return "text-red-500"
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         toast.success(`Your ${wordCount} word essay has been submitted successfully.`)
         setIsTimerRunning(false)
+
+        try {
+            const res = await fetch("/api/writing/essay-writing", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    prompt: currentEssay.topic,
+                    response: essayContent.trim(),
+                }),
+            });
+
+            const result = await res.json();
+
+            setEvaluationResult(result);
+
+            toast.success("Evaluation Complete", {
+                description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,
+            });
+        } catch (err: any) {
+            toast.error("Evaluation failed. Please try again later.", {
+                description: err.message || "Unexpected error",
+            });
+
+            setEvaluationResult({
+                score: undefined,
+                feedback: "An error occurred while evaluating your summary.",
+            });
+        }
     }
 
     const handleNext = () => {
@@ -143,6 +177,13 @@ export default function EssayWritingInterface() {
 
     return (
         <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+            <AIChatSidebar
+                section="Writing"
+                questionType="Write Essay"
+                instruction="Write a 200–300 word essay in response to the given prompt."
+                passage={currentEssay.topic} // instead of currentPassage.content
+                userResponse={essayContent}
+            />
             <div className="container mx-auto py-6 px-4 max-w-5xl">
                 <Card className="shadow-lg border-t-4 border-t-violet-500 dark:border-t-violet-400">
                     <CardHeader className="pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -239,7 +280,7 @@ export default function EssayWritingInterface() {
                                 </TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="write" className="mt-0">
+                            <TabsContent value="write" className="flex flex-col mt-0 gap-5">
                                 <Textarea
                                     ref={textareaRef}
                                     placeholder="Write your essay here..."
@@ -247,6 +288,24 @@ export default function EssayWritingInterface() {
                                     value={essayContent}
                                     onChange={(e) => setEssayContent(e.target.value)}
                                 />
+                                {/* Evaluation Result Card */}
+                                {evaluationResult && (
+                                    <div className="p-4 rounded-xl border border-purple-300 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-white dark:from-slate-800 dark:to-slate-900 shadow-xl">
+                                        <h4 className="text-lg font-bold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">
+                                            ✅ Evaluation Result
+                                        </h4>
+                                        <div className="text-sm space-y-2 text-slate-800 dark:text-slate-300">
+                                            <p>
+                                                <strong className="text-purple-600 dark:text-purple-400">Score:</strong>{" "}
+                                                <span className="font-medium">{evaluationResult.score || "N/A"} / 5</span>
+                                            </p>
+                                            <p>
+                                                <strong className="text-purple-600 dark:text-purple-400">Feedback:</strong><br />
+                                                <span className="italic">{evaluationResult.feedback}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </TabsContent>
 
                             <TabsContent value="preview" className="mt-0">
@@ -350,7 +409,11 @@ export default function EssayWritingInterface() {
                                 </Button>
                             </div>
 
-                            <Button onClick={handleSubmit} className="bg-violet-600 hover:bg-violet-700">
+                            <Button
+                                onClick={handleSubmit}
+                                className="bg-violet-600 hover:bg-violet-700"
+                                disabled={evaluationResult != null}
+                            >
                                 <Upload className="h-4 w-4 mr-2" />
                                 Submit
                             </Button>

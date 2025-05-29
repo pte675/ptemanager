@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import summarizeData from "./summarize-text.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 export default function TextSummarizationInterface() {
     const [activeTab, setActiveTab] = useState("read")
@@ -44,7 +45,6 @@ export default function TextSummarizationInterface() {
     const [totalQuestions, setTotalQuestions] = useState(258)
     const [isExpanded, setIsExpanded] = useState(false)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
-
     // Calculate time remaining in minutes and seconds
     const minutes = Math.floor(timeRemaining / 60)
     const seconds = timeRemaining % 60
@@ -62,6 +62,9 @@ export default function TextSummarizationInterface() {
         category: categories[index % categories.length],
         difficulty: difficultyLevels[index % difficultyLevels.length],
     }))
+
+    const [evaluationResult, setEvaluationResult] = useState<{ score?: string; feedback?: string } | null>(null);
+
 
     // Timer effect
     useEffect(() => {
@@ -105,15 +108,45 @@ export default function TextSummarizationInterface() {
         return "text-red-500" // Less than 2 minutes
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (sentenceCount !== 1) {
-            toast.error("Warning: Your summary should be exactly one sentence. Please revise before submitting.")
-            return
+            toast.error("Warning: Your summary should be exactly one sentence. Please revise before submitting.");
+            return;
         }
 
-        toast.success(`Summary Submitted: Your ${wordCount} word summary has been submitted successfully.`)
-        setIsTimerRunning(false)
-    }
+        toast.success(`Summary Submitted: Your ${wordCount} word summary has been submitted successfully.`);
+        setIsTimerRunning(false);
+
+        try {
+            const res = await fetch("/api/writing/summarize-text", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    prompt: currentPassage.content,
+                    response: summaryContent.trim(),
+                }),
+            });
+
+            const result = await res.json();
+
+            setEvaluationResult(result);
+
+            toast.success("Evaluation Complete", {
+                description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,
+            });
+        } catch (err: any) {
+            toast.error("Evaluation failed. Please try again later.", {
+                description: err.message || "Unexpected error",
+            });
+
+            setEvaluationResult({
+                score: undefined,
+                feedback: "An error occurred while evaluating your summary.",
+            });
+        }
+    };
 
     const handleNext = () => {
         if (currentPassageIndex < PASSAGES.length - 1) {
@@ -132,6 +165,7 @@ export default function TextSummarizationInterface() {
     }
 
     const resetSummary = () => {
+        setEvaluationResult(null)
         setSummaryContent("")
         setTimeRemaining(10 * 60)
         setIsTimerRunning(true)
@@ -159,6 +193,13 @@ export default function TextSummarizationInterface() {
 
     return (
         <main className="min-h-screen bg-gradient-to-b from-teal-50 to-slate-50 dark:from-slate-900 dark:to-slate-800">
+            <AIChatSidebar
+                section="Writing"
+                questionType="Summarize Written Text"
+                instruction="You need to summarize the passage in one line."
+                passage={currentPassage.content}
+                userResponse={summaryContent}
+            />
             <div className={cn("container mx-auto py-6 px-4", isExpanded ? "max-w-7xl" : "max-w-5xl")}>
                 <Card className="shadow-lg border-t-4 border-t-teal-500 dark:border-t-teal-400">
                     <CardHeader className="pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -312,6 +353,25 @@ export default function TextSummarizationInterface() {
                                         <span className="text-slate-500">{wordCount} words</span>
                                     </div>
                                 </div>
+
+                                {/* Evaluation Result Card */}
+                                {evaluationResult && (
+                                    <div className="p-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-gradient-to-br from-emerald-50 to-white dark:from-slate-800 dark:to-slate-900 shadow-xl">
+                                        <h4 className="text-lg font-bold text-emerald-700 dark:text-emerald-300 mb-2 flex items-center gap-2">
+                                            ✅ Evaluation Result
+                                        </h4>
+                                        <div className="text-sm space-y-2 text-slate-800 dark:text-slate-300">
+                                            <p>
+                                                <strong className="text-emerald-600 dark:text-emerald-400">Score:</strong>{" "}
+                                                <span className="font-medium">{evaluationResult.score || "N/A"} / 5</span>
+                                            </p>
+                                            <p>
+                                                <strong className="text-emerald-600 dark:text-emerald-400">Feedback:</strong><br />
+                                                <span className="italic">{evaluationResult.feedback}</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </TabsContent>
 
                             <TabsContent value="tips" className="mt-0">
@@ -384,7 +444,7 @@ export default function TextSummarizationInterface() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                             <div className="flex items-center gap-2">
                                 <Button variant="outline" size="sm" onClick={handlePrevious} disabled={currentPassageIndex === 0}>
                                     <ChevronLeft className="h-4 w-4 mr-1" />
@@ -407,7 +467,10 @@ export default function TextSummarizationInterface() {
                                 </Button>
                             </div>
 
-                            <Button onClick={handleSubmit} className="bg-teal-600 hover:bg-teal-700" disabled={sentenceCount !== 1}>
+                            <Button
+                                onClick={handleSubmit}
+                                className="bg-teal-600 hover:bg-teal-700"
+                                disabled={sentenceCount !== 1 || evaluationResult != null}>
                                 <Upload className="h-4 w-4 mr-2" />
                                 Submit
                             </Button>

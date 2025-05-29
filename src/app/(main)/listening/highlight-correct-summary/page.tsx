@@ -38,6 +38,7 @@ import {
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import rawQuestions from "./highlight-correct-summary.json"
+import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 const SAMPLE_QUESTIONS = rawQuestions.map((item) => {
     const correctId = item.answer.match(/[A-D]/)?.[0]?.toLowerCase() || ""
@@ -52,7 +53,7 @@ const SAMPLE_QUESTIONS = rawQuestions.map((item) => {
                 correct: id === correctId,
             }
         })
-
+    const transcript = item.answer.split("###Transcript:")[1]?.replace("###", "").trim()
     return {
         id: item.id,
         title: item.title,
@@ -64,6 +65,7 @@ const SAMPLE_QUESTIONS = rawQuestions.map((item) => {
             : item.audio,
         duration: 90,
         options,
+        transcript,
         difficulty: "Medium",
         category: "General",
     }
@@ -300,6 +302,13 @@ export default function HighlightCorrectSummaryInterface() {
 
     return (
         <div className="container mx-auto py-6 px-4 max-w-5xl">
+            <AIChatSidebar
+                section="Listening"
+                questionType="Highlight Correct Summary"
+                instruction={`Select the paragraph that best summarizes the recording. Correct option: "${currentQuestion.options.find(o => o.correct)?.text}"`}
+                passage={`/Transcript:${currentQuestion.transcript}`}
+                userResponse={selectedOption ? currentQuestion.options.find(o => o.id === selectedOption)?.text || "" : ""}
+            />
             <Card className="shadow-lg border-t-4 border-t-indigo-500 dark:border-t-indigo-400">
                 <CardHeader className="pb-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
@@ -402,9 +411,8 @@ export default function HighlightCorrectSummaryInterface() {
 
                         <TabsContent value="question" className="mt-0 space-y-4">
                             {/* Audio Player */}
-                            <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
+                            {/* <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
                                 <div className="flex flex-col space-y-4">
-                                    {/* Audio element (hidden) */}
                                     <audio
                                         ref={audioRef}
                                         src={currentQuestion.audioUrl}
@@ -417,7 +425,6 @@ export default function HighlightCorrectSummaryInterface() {
                                         }}
                                     />
 
-                                    {/* Waveform visualization (simulated) */}
                                     <div className="relative h-12 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
                                         <div
                                             className="absolute top-0 left-0 h-full bg-indigo-100 dark:bg-indigo-900/30"
@@ -425,7 +432,6 @@ export default function HighlightCorrectSummaryInterface() {
                                         ></div>
                                         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
                                             <svg className="w-full h-8" viewBox="0 0 1200 100" preserveAspectRatio="none">
-                                                {/* Simulated waveform - in a real app, this would be generated from the actual audio */}
                                                 {Array.from({ length: 100 }).map((_, i) => {
                                                     const height = 10 + Math.random() * 80
                                                     return (
@@ -445,7 +451,6 @@ export default function HighlightCorrectSummaryInterface() {
                                         </div>
                                     </div>
 
-                                    {/* Playback controls */}
                                     <div className="flex flex-col space-y-2">
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm font-mono">{formatTime(currentTime)}</span>
@@ -545,7 +550,7 @@ export default function HighlightCorrectSummaryInterface() {
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
 
                             <iframe
                                 src={currentQuestion.audioUrl}
