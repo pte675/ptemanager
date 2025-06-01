@@ -34,18 +34,17 @@ export function HeroSection() {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
-              <span className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-transparent">
-                Master Any Language
+              <span className="bg-gradient-to-r from-indigo-600 to-pink-500 bg-clip-text text-transparent">
+                Crack the PTE Exam
               </span>
               <br />
-              <span className="text-slate-900 dark:text-white">With Proven Methods</span>
+              <span className="text-slate-900 dark:text-white">With AI-Powered Precision</span>
             </h1>
 
             <p className="text-lg md:text-xl text-slate-700 dark:text-slate-300 mb-8 max-w-2xl mx-auto lg:mx-0">
-              Our AI-powered platform adapts to your learning style, making language acquisition faster and more
-              effective than traditional methods.
+              PTE Go Global adapts to your skill level and gives you smarter feedback, helping you improve faster with
+              real-time evaluation and expert-designed practice sets.
             </p>
-
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
               <div className="flex-1 max-w-md">
                 <Input
@@ -71,15 +70,15 @@ export function HeroSection() {
             <div className="flex flex-wrap justify-center lg:justify-start gap-x-8 gap-y-4">
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-slate-700 dark:text-slate-300">No credit card required</span>
+                <span className="text-slate-700 dark:text-slate-300">Absolutely free for everyone</span>
               </div>
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-slate-700 dark:text-slate-300">Cancel anytime</span>
+                <span className="text-slate-700 dark:text-slate-300">No credit card ever needed</span>
               </div>
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-slate-700 dark:text-slate-300">40+ languages</span>
+                <span className="text-slate-700 dark:text-slate-300">No subscriptions. No cancellations.</span>
               </div>
             </div>
           </motion.div>
@@ -104,8 +103,7 @@ export function HeroSection() {
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Your Learning Dashboard</h3>
-
+                  <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">Choose an option below to get started</h3>
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <SkillCard
                       name="Speaking"

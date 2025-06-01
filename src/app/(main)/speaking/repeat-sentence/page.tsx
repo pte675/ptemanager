@@ -98,6 +98,9 @@ export default function RepeatSentenceInterface() {
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const audioChunksRef = useRef<Blob[]>([])
 
+    const [evaluationResult, setEvaluationResult] = useState<{ score?: string; feedback?: string } | null>(null);
+
+
     // Request microphone permission
     useEffect(() => {
         const requestMicrophonePermission = async () => {
@@ -359,8 +362,27 @@ export default function RepeatSentenceInterface() {
         }
     }
 
+    function evaluateResponse(transcribed: string, expected: string): { score: string; feedback: string } {
+        const transcribedWords = transcribed.trim().toLowerCase().split(/\s+/)
+        const expectedWords = expected.trim().toLowerCase().split(/\s+/)
+
+        const matchedWords = transcribedWords.filter((word, index) => word === expectedWords[index])
+        const score = Math.round((matchedWords.length / expectedWords.length) * 5)
+
+        const feedback =
+            score === 5
+                ? "Excellent! You repeated the sentence perfectly."
+                : score >= 4
+                    ? "Great job! Just a couple of minor mistakes."
+                    : score >= 3
+                        ? "Fair attempt, but try to be more accurate with wording and order."
+                        : "Needs improvement. Focus on listening carefully and repeating the sentence word for word."
+
+        return { score: `${score}`, feedback }
+    }
+
     // Handle form submission
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!recordedAudio) {
             toast.error("No recording found", {
                 description: "Please complete the recording before submitting.",
@@ -375,10 +397,49 @@ export default function RepeatSentenceInterface() {
         //     description: "Your sentence repetition has been submitted successfully.",
         //     variant: "default",
         // })
+
+        const formData = new FormData()
+        formData.append("file", recordedAudio, "audio.wav")
+
+        var data_text;
+        try {
+            const res = await fetch("/api/speaking/transcribe", {
+                method: "POST",
+                body: formData,
+            })
+
+            if (!res.ok) throw new Error("Failed to get transcription")
+
+            data_text = await res.json()
+
+            toast(
+                <div>
+                    <p className="font-semibold">Transcription Received</p>
+                    <p className="text-sm text-muted-foreground">
+                        {data_text.text}
+                    </p>
+                </div>
+            )
+        } catch (err) {
+            console.error(err)
+            toast(
+                <div>
+                    <p className="font-semibold">Submission Failed</p>
+                    <p className="text-sm text-red-500">
+                        Could not transcribe your recording.
+                    </p>
+                </div>
+            )
+        }
+
+        const result = evaluateResponse(data_text.text, SAMPLE_TASK.sentence)
+        setEvaluationResult(result)
+
     }
 
     // Reset exercise
     const resetExercise = () => {
+        setEvaluationResult(null)
         setPhase("ready")
         setIsPlaying(false)
         setCurrentTime(0)
@@ -887,6 +948,28 @@ export default function RepeatSentenceInterface() {
                                             <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                                                 Please enable microphone permissions in your browser settings
                                             </p>
+                                        </div>
+                                    )}
+
+                                    {evaluationResult && (
+                                        <div className="w-full p-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-gradient-to-br from-emerald-50 to-white dark:from-slate-800 dark:to-slate-900 shadow-xl">
+                                            <h4 className="text-lg font-bold text-emerald-700 dark:text-emerald-300 mb-2 flex items-center gap-2">
+                                                ✅ Evaluation Result
+                                            </h4>
+                                            <div className="text-sm space-y-2 text-slate-800 dark:text-slate-300">
+                                                <p>
+                                                    <strong className="text-emerald-600 dark:text-emerald-400">Score:</strong>{" "}
+                                                    <span className="font-medium">{evaluationResult.score || "N/A"} / 5</span>
+                                                </p>
+                                                <p>
+                                                    <strong className="text-emerald-600 dark:text-emerald-400">Feedback:</strong><br />
+                                                    <span className="italic">{evaluationResult.feedback}</span>
+                                                </p>
+                                            </div>
+                                            <div className="text-sm text-slate-700 dark:text-slate-400 pt-3">
+                                                <strong className="text-emerald-600 dark:text-emerald-400">Correct Answer:</strong><br />
+                                                <p className="whitespace-pre-line">{SAMPLE_TASK.sentence}</p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

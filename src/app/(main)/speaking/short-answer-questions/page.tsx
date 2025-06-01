@@ -117,6 +117,8 @@ export default function ShortAnswerInterface() {
 
     const currentQuestion = SAMPLE_QUESTIONS[currentQuestionIndex]
 
+    const [evaluationResult, setEvaluationResult] = useState<{ score?: string; feedback?: string } | null>(null);
+
     // Request microphone permission
     useEffect(() => {
         const requestMicrophonePermission = async () => {
@@ -352,7 +354,7 @@ export default function ShortAnswerInterface() {
     }
 
     // Handle form submission
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!recordedAudio) {
             toast.error("No recording found", {
                 description: "Please complete the recording before submitting.",
@@ -361,18 +363,86 @@ export default function ShortAnswerInterface() {
         }
 
         // Simulate answer checking
-        const simulatedAnswer = currentQuestion.expectedAnswer // In real app, this would come from speech recognition
-        setUserAnswer(simulatedAnswer)
-        checkAnswer(simulatedAnswer)
+        // const simulatedAnswer = currentQuestion.expectedAnswer // In real app, this would come from speech recognition
+        // setUserAnswer(simulatedAnswer)
+        // checkAnswer(simulatedAnswer)
         setHasSubmitted(true)
 
         toast.success("Response Submitted", {
             description: "Your answer has been submitted and evaluated.",
         })
+
+        const formData = new FormData()
+        formData.append("file", recordedAudio, "audio.wav")
+
+        var data_text;
+        try {
+            const res = await fetch("/api/speaking/transcribe", {
+                method: "POST",
+                body: formData,
+            })
+
+            if (!res.ok) throw new Error("Failed to get transcription")
+
+            data_text = await res.json()
+
+            toast(
+                <div>
+                    <p className="font-semibold">Transcription Received</p>
+                    <p className="text-sm text-muted-foreground">
+                        {data_text.text}
+                    </p>
+                </div>
+            )
+        } catch (err) {
+            console.error(err)
+            toast(
+                <div>
+                    <p className="font-semibold">Submission Failed</p>
+                    <p className="text-sm text-red-500">
+                        Could not transcribe your recording.
+                    </p>
+                </div>
+            )
+        }
+
+
+        try {
+            const res = await fetch("/api/speaking/short-answer-questions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    sampleAnswer: currentQuestion.expectedAnswer,
+                    question: currentQuestion.transcript,
+                    userResponse: data_text.text,
+                }),
+            });
+
+            const result = await res.json();
+
+            setEvaluationResult(result);
+
+            toast.success("Evaluation Complete", {
+                description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,
+            });
+        } catch (err: any) {
+            toast.error("Evaluation failed. Please try again later.", {
+                description: err.message || "Unexpected error",
+            });
+
+            setEvaluationResult({
+                score: undefined,
+                feedback: "An error occurred while evaluating your summary.",
+            });
+        }
+
     }
 
     // Reset exercise
     const resetExercise = () => {
+        setEvaluationResult(null)
         setPhase("ready")
         setIsPlaying(false)
         setCurrentTime(0)
@@ -966,6 +1036,28 @@ export default function ShortAnswerInterface() {
                                             <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                                                 Please enable microphone permissions in your browser settings
                                             </p>
+                                        </div>
+                                    )}
+
+                                    {evaluationResult && (
+                                        <div className="w-full p-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-gradient-to-br from-emerald-50 to-white dark:from-slate-800 dark:to-slate-900 shadow-xl">
+                                            <h4 className="text-lg font-bold text-emerald-700 dark:text-emerald-300 mb-2 flex items-center gap-2">
+                                                ✅ Evaluation Result
+                                            </h4>
+                                            <div className="text-sm space-y-2 text-slate-800 dark:text-slate-300">
+                                                <p>
+                                                    <strong className="text-emerald-600 dark:text-emerald-400">Score:</strong>{" "}
+                                                    <span className="font-medium">{evaluationResult.score || "N/A"} / 5</span>
+                                                </p>
+                                                <p>
+                                                    <strong className="text-emerald-600 dark:text-emerald-400">Feedback:</strong><br />
+                                                    <span className="italic">{evaluationResult.feedback}</span>
+                                                </p>
+                                            </div>
+                                            <div className="text-sm text-slate-700 dark:text-slate-400 pt-3">
+                                                <strong className="text-emerald-600 dark:text-emerald-400">Model Answer:</strong><br />
+                                                <p className="whitespace-pre-line">{currentQuestion.expectedAnswer}</p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>

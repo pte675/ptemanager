@@ -116,11 +116,11 @@ export default function FillInTheBlanks() {
                 passage={currentQuestion.content}
                 userResponse={Object.values(blanks).filter(Boolean).join(" ")}
             />
-            <div className="min-h-screen p-6 bg-slate-50 text-gray-800">
-                <div className="max-w-4xl mx-auto bg-white p-6 rounded shadow">
-                    <h2 className="text-xl font-bold mb-4 text-blue-600">{currentQuestion.title}</h2>
+            <div className="min-h-screen p-6 bg-slate-50  dark:bg-black/80 text-gray-800 dark:text-gray-100">
+                <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 p-6 rounded shadow">
+                    <h2 className="text-xl font-bold mb-4 text-blue-600 dark:text-blue-400">{currentQuestion.title}</h2>
 
-                    <p className="text-sm text-gray-600 mb-6">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
                         Drag words from the box below to the appropriate place in the text.
                     </p>
 
@@ -142,7 +142,7 @@ export default function FillInTheBlanks() {
                         </p>
 
                         <SortableContext items={wordBank} strategy={verticalListSortingStrategy}>
-                            <div id="bank" className="flex flex-wrap gap-2 p-3 border rounded bg-slate-100 min-h-[60px] mt-6">
+                            <div id="bank" className="flex flex-wrap gap-2 p-3 border rounded bg-slate-100 dark:bg-slate-800 min-h-[60px] mt-6">
                                 {wordBank.map(word => (
                                     <DraggableWord key={word} id={word} word={word} />
                                 ))}
@@ -179,7 +179,7 @@ export default function FillInTheBlanks() {
                             {currentIndex < questions.length - 1 && (
                                 <button
                                     onClick={() => setCurrentIndex(currentIndex + 1)}
-                                    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+                                    className="px-4 py-2 bg-black dark:bg-slate-800 text-white rounded hover:bg-gray-800 dark:hover:bg-slate-700"
                                 >
                                     Next →
                                 </button>
@@ -189,18 +189,16 @@ export default function FillInTheBlanks() {
 
                     {submitted && (
                         <div className="mt-4">
-                            <p className={`font-semibold ${isCorrect ? "text-green-600" : "text-red-600"}`}>
+                            <p className={`font-semibold ${isCorrect ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
                                 {isCorrect ? "✅ Correct!" : "❌ Incorrect. Try again or check the correct answer."}
                             </p>
 
                             {!isCorrect && (
                                 <div className="mt-3">
-                                    <h4 className="text-gray-700 font-semibold mb-1">Correct Answers:</h4>
-                                    <ul className="list-decimal ml-6 text-sm text-gray-800 space-y-1">
+                                    <h4 className="text-gray-700 dark:text-gray-200 font-semibold mb-1">Correct Answers:</h4>
+                                    <ul className="list-decimal ml-6 text-sm text-gray-800 dark:text-gray-300 space-y-1">
                                         {answerOrder.map((ans, index) => (
-                                            <li key={index}>
-                                                {ans}
-                                            </li>
+                                            <li key={index}>{ans}</li>
                                         ))}
                                     </ul>
                                 </div>

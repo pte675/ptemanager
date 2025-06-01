@@ -44,7 +44,7 @@ export function MethodologySection() {
         "Prevents wasted time on mastered concepts",
         "Continuously optimizes your learning path",
       ],
-      image: "/placeholder.svg?height=400&width=600",
+      image: "/landing-page/adaptive-ai.png",
     },
     {
       id: "community",
@@ -57,7 +57,7 @@ export function MethodologySection() {
         "Creates accountability through social learning",
         "Builds confidence in real-world settings",
       ],
-      image: "/placeholder.svg?height=400&width=600",
+      image: "/landing-page/community-practice.png",
     },
   ]
 

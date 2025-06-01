@@ -125,6 +125,8 @@ export default function RetellLectureInterface() {
     const audioChunksRef = useRef<Blob[]>([])
     const notesRef = useRef<HTMLTextAreaElement>(null)
 
+    const [evaluationResult, setEvaluationResult] = useState<{ score?: string; feedback?: string } | null>(null);
+
     // Request microphone permission
     useEffect(() => {
         const requestMicrophonePermission = async () => {
@@ -365,7 +367,7 @@ export default function RetellLectureInterface() {
     }
 
     // Handle form submission
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!recordedAudio) {
             toast.error("No recording found", {
                 description: "Please complete the recording before submitting.",
@@ -380,10 +382,76 @@ export default function RetellLectureInterface() {
         //     description: "Your lecture retelling has been submitted successfully.",
         //     variant: "default",
         // })
+
+        const formData = new FormData()
+        formData.append("file", recordedAudio, "audio.wav")
+
+        var data_text;
+        try {
+            const res = await fetch("/api/speaking/transcribe", {
+                method: "POST",
+                body: formData,
+            })
+
+            if (!res.ok) throw new Error("Failed to get transcription")
+
+            data_text = await res.json()
+
+            toast(
+                <div>
+                    <p className="font-semibold">Transcription Received</p>
+                    <p className="text-sm text-muted-foreground">
+                        {data_text.text}
+                    </p>
+                </div>
+            )
+        } catch (err) {
+            console.error(err)
+            toast(
+                <div>
+                    <p className="font-semibold">Submission Failed</p>
+                    <p className="text-sm text-red-500">
+                        Could not transcribe your recording.
+                    </p>
+                </div>
+            )
+        }
+
+
+        try {
+            const res = await fetch("/api/speaking/retell-lecture", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    transcript: SAMPLE_TASK.transcript,
+                    response: data_text.text,
+                }),
+            });
+
+            const result = await res.json();
+
+            setEvaluationResult(result);
+
+            toast.success("Evaluation Complete", {
+                description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,
+            });
+        } catch (err: any) {
+            toast.error("Evaluation failed. Please try again later.", {
+                description: err.message || "Unexpected error",
+            });
+
+            setEvaluationResult({
+                score: undefined,
+                feedback: "An error occurred while evaluating your summary.",
+            });
+        }
     }
 
     // Reset exercise
     const resetExercise = () => {
+        setEvaluationResult(null)
         setPhase("ready")
         setIsPlaying(false)
         setCurrentTime(0)
@@ -423,6 +491,10 @@ export default function RetellLectureInterface() {
         //     description: "Previous question would be loaded here.",
         //     variant: "default",
         // })
+        if (currentIndex > 0) {
+            setCurrentIndex((prev) => prev - 1)
+            resetExercise()
+        }
         setProgress((prev) => Math.max(prev - 1, 1))
     }
 
@@ -433,6 +505,10 @@ export default function RetellLectureInterface() {
         //     description: "Next question would be loaded here.",
         //     variant: "default",
         // })
+        if (currentIndex < rawQuestions.length - 1) {
+            setCurrentIndex((prev) => prev + 1)
+            resetExercise()
+        }
         setProgress((prev) => Math.min(prev + 1, totalQuestions))
     }
 
@@ -630,189 +706,6 @@ export default function RetellLectureInterface() {
                             )}
 
                             {/* Audio Player */}
-                            <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                                <div className="flex flex-col space-y-4">
-                                    {/* Audio element (hidden) */}
-                                    <audio
-                                        ref={audioRef}
-                                        src={SAMPLE_TASK.audioUrl}
-                                        onTimeUpdate={handleTimeUpdate}
-                                        onEnded={handleAudioEnded}
-                                        onLoadedMetadata={() => {
-                                            if (audioRef.current) {
-                                                setDuration(audioRef.current.duration)
-                                            }
-                                        }}
-                                    />
-
-                                    {/* Waveform visualization (simulated) */}
-                                    <div className="relative h-16 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden">
-                                        <div
-                                            className="absolute top-0 left-0 h-full bg-orange-100 dark:bg-orange-900/30"
-                                            style={{ width: `${(currentTime / duration) * 100}%` }}
-                                        ></div>
-                                        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                                            <svg className="w-full h-12" viewBox="0 0 1200 100" preserveAspectRatio="none">
-                                                {/* Simulated waveform - in a real app, this would be generated from the actual audio */}
-                                                {Array.from({ length: 120 }).map((_, i) => {
-                                                    const height = 10 + Math.random() * 80
-                                                    return (
-                                                        <rect
-                                                            key={i}
-                                                            x={i * 10}
-                                                            y={(100 - height) / 2}
-                                                            width="6"
-                                                            height={height}
-                                                            rx="2"
-                                                            fill={i * 10 < (currentTime / duration) * 1200 ? "#f97316" : "#cbd5e1"}
-                                                            className="dark:fill-slate-600"
-                                                        />
-                                                    )
-                                                })}
-                                            </svg>
-                                        </div>
-                                    </div>
-
-                                    {/* Playback controls */}
-                                    <div className="flex flex-col space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm font-mono">{formatTime(currentTime)}</span>
-                                            <div className="flex items-center space-x-2">
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="ghost" size="icon" onClick={restartAudio}>
-                                                                <Repeat className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Restart</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="ghost" size="icon" onClick={skipBackward}>
-                                                                <SkipBack className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Back 10s</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-
-                                                <Button
-                                                    variant="default"
-                                                    size="icon"
-                                                    className="h-12 w-12 rounded-full bg-orange-500 hover:bg-orange-600"
-                                                    onClick={togglePlay}
-                                                >
-                                                    {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 ml-0.5" />}
-                                                </Button>
-
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="ghost" size="icon" onClick={skipForward}>
-                                                                <SkipForward className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Forward 10s</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-
-                                                <div className="relative group">
-                                                    <Button variant="ghost" size="icon" onClick={toggleMute}>
-                                                        {getVolumeIcon()}
-                                                    </Button>
-                                                    <div className="absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 w-24 p-2 bg-white dark:bg-slate-800 rounded-md shadow-md z-10">
-                                                        <Slider
-                                                            value={[volume]}
-                                                            min={0}
-                                                            max={100}
-                                                            step={1}
-                                                            onValueChange={handleVolumeChange}
-                                                            className="w-full"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="relative group">
-                                                    <Button variant="ghost" size="sm" className="text-xs">
-                                                        {playbackRate}x
-                                                    </Button>
-                                                    <div className="absolute hidden group-hover:block bottom-full right-0 w-24 p-2 bg-white dark:bg-slate-800 rounded-md shadow-md z-10">
-                                                        <div className="flex flex-col space-y-1">
-                                                            {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                                                                <Button
-                                                                    key={rate}
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className={cn(
-                                                                        "text-xs justify-start",
-                                                                        playbackRate === rate && "bg-orange-100 dark:bg-orange-900/30",
-                                                                    )}
-                                                                    onClick={() => handlePlaybackRateChange(rate)}
-                                                                >
-                                                                    {rate}x
-                                                                </Button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <span className="text-sm font-mono">{formatTime(duration)}</span>
-                                        </div>
-
-                                        <Slider
-                                            value={[currentTime]}
-                                            min={0}
-                                            max={duration}
-                                            step={0.1}
-                                            onValueChange={handleSeek}
-                                            className="w-full"
-                                        />
-
-                                        <div className="flex items-center justify-between text-xs text-slate-500">
-                                            <span>
-                                                {SAMPLE_TASK.wordCount} words • {SAMPLE_TASK.estimatedDuration}s
-                                            </span>
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <span>Transcript</span>
-                                                    <Switch checked={showTranscript} onCheckedChange={setShowTranscript} />
-                                                </div>
-                                                <div className="flex items-center space-x-2">
-                                                    <span>Key Points</span>
-                                                    <Switch checked={showKeyPoints} onCheckedChange={setShowKeyPoints} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Transcript (conditionally shown) */}
-                            {showTranscript && (
-                                <div className="bg-white dark:bg-slate-900 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="font-medium flex items-center gap-1">
-                                            <FileText className="h-4 w-4" />
-                                            Transcript (Practice Mode)
-                                        </h3>
-                                        <Button variant="outline" size="sm" onClick={() => setShowTranscript(false)} className="text-xs">
-                                            <EyeOff className="h-3 w-3 mr-1" />
-                                            Hide
-                                        </Button>
-                                    </div>
-                                    <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed max-h-40 overflow-y-auto">
-                                        {SAMPLE_TASK.transcript.split("\n\n").map((paragraph, i) => (
-                                            <p key={i} className="mb-2">
-                                                {paragraph}
-                                            </p>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
 
                             {/* Key Points (conditionally shown) */}
                             {showKeyPoints && (
@@ -850,7 +743,7 @@ export default function RetellLectureInterface() {
                                         </div>
                                     )}
 
-                                    {phase === "listening" && (
+                                    {/* {phase === "listening" && (
                                         <div className="text-center">
                                             <div className="flex items-center justify-center gap-2 mb-2">
                                                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
@@ -877,7 +770,7 @@ export default function RetellLectureInterface() {
                                             // indicatorClassName="bg-amber-500"
                                             />
                                         </div>
-                                    )}
+                                    )} */}
 
                                     {phase === "recording" && (
                                         <div className="text-center">
@@ -971,16 +864,36 @@ export default function RetellLectureInterface() {
                                     )}
                                 </div>
                             </div>
+
+                            <iframe
+                                src={SAMPLE_TASK.audioUrl}
+                                width="100%"
+                                height="60"
+                                allow="autoplay"
+                                title={`Audio for ${SAMPLE_TASK.title}`}
+                                className="rounded-md border"
+                            />
+
+                            {evaluationResult && (
+                                <div className="p-4 rounded-xl border border-orange-300 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-white dark:from-slate-800 dark:to-slate-900 shadow-xl">
+                                    <h4 className="text-lg font-bold text-orange-700 dark:text-orange-300 mb-2 flex items-center gap-2">
+                                        ✅ Evaluation Result
+                                    </h4>
+                                    <div className="text-sm space-y-2 text-slate-800 dark:text-slate-300">
+                                        <p>
+                                            <strong className="text-orange-600 dark:text-orange-400">Score:</strong>{" "}
+                                            <span className="font-medium">{evaluationResult.score || "N/A"} / 5</span>
+                                        </p>
+                                        <p>
+                                            <strong className="text-orange-600 dark:text-orange-400">Feedback:</strong><br />
+                                            <span className="italic">{evaluationResult.feedback}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </TabsContent>
 
-                        <iframe
-                            src={SAMPLE_TASK.audioUrl}
-                            width="100%"
-                            height="60"
-                            allow="autoplay"
-                            title={`Audio for ${SAMPLE_TASK.title}`}
-                            className="rounded-md border"
-                        />
+
 
                         <TabsContent value="notes" className="mt-0">
                             <div className="space-y-4">
@@ -1204,6 +1117,19 @@ export default function RetellLectureInterface() {
 
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                         <div className="flex items-center gap-2">
+                            {(phase !== "recording" && phase !== "completed") && (
+                                <Button
+                                    onClick={() => {
+                                        setPhase("recording")
+                                        startRecording()
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                    size="sm"
+                                >
+                                    Start Recording
+                                </Button>
+                            )}
+
                             <Button variant="outline" size="sm" onClick={handlePrevious} disabled={progress === 1}>
                                 <ChevronLeft className="h-4 w-4 mr-1" />
                                 Previous

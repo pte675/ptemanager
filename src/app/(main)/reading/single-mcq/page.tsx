@@ -226,7 +226,7 @@ export default function EnhancedQuiz() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8">
+        <>
             <AIChatSidebar
                 section="PTE Reading"
                 questionType="Single Answer Multiple Choice"
@@ -241,172 +241,174 @@ export default function EnhancedQuiz() {
                         : "No answer selected"
                 }
             />
-            <div className="max-w-4xl mx-auto">
-                <header className="mb-8 text-center">
-                    <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
-                        Interactive Learning Platform
-                    </h1>
-                    <p className="text-slate-600 max-w-2xl mx-auto">
-                        Test your knowledge with our enhanced quiz experience featuring interactive elements, detailed explanations,
-                        and real-time feedback.
-                    </p>
-                </header>
-                <Card className="w-full max-w-3xl mx-auto shadow-lg">
-                    <CardHeader className="relative border-b">
-                        <div className="flex justify-between items-center">
-                            <Badge variant="outline" className="px-3 py-1 text-sm">
-                                {currentQuestion.category}
-                            </Badge>
-                            <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="px-3 py-1">
-                                    {currentIndex + 1}/{totalQuestions}
+            <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-black dark:to-black p-4 md:p-8">
+                <div className="max-w-4xl mx-auto">
+                    <header className="mb-8 text-center">
+                        <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
+                            Interactive Learning Platform
+                        </h1>
+                        <p className="text-slate-600 max-w-2xl mx-auto">
+                            Test your knowledge with our enhanced quiz experience featuring interactive elements, detailed explanations,
+                            and real-time feedback.
+                        </p>
+                    </header>
+                    <Card className="w-full max-w-3xl mx-auto shadow-lg">
+                        <CardHeader className="relative border-b">
+                            <div className="flex justify-between items-center">
+                                <Badge variant="outline" className="px-3 py-1 text-sm">
+                                    {currentQuestion.category}
                                 </Badge>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={toggleBookmark}
-                                    className="text-muted-foreground hover:text-primary"
-                                >
-                                    {isBookmarked[currentQuestion.id] ? (
-                                        <BookmarkCheck className="w-5 h-5 text-primary" />
-                                    ) : (
-                                        <Bookmark className="w-5 h-5" />
-                                    )}
-                                </Button>
-                            </div>
-                        </div>
-                        <Progress value={progress} className="h-1 absolute bottom-0 left-0 right-0" />
-                    </CardHeader>
-
-                    <CardContent className="p-6">
-                        <div className="space-y-6">
-                            {showTimer && (
-                                <div className="flex justify-end">
-                                    <Badge
-                                        variant={timeLeft < 10 ? "destructive" : "outline"}
-                                        className={cn("px-3 py-1 flex items-center gap-1", timeLeft < 10 && "animate-pulse")}
-                                    >
-                                        <Clock className="w-4 h-4" />
-                                        {formatTime(timeLeft)}
+                                <div className="flex items-center gap-2">
+                                    <Badge variant="secondary" className="px-3 py-1">
+                                        {currentIndex + 1}/{totalQuestions}
                                     </Badge>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={toggleBookmark}
+                                        className="text-muted-foreground hover:text-primary"
+                                    >
+                                        {isBookmarked[currentQuestion.id] ? (
+                                            <BookmarkCheck className="w-5 h-5 text-primary" />
+                                        ) : (
+                                            <Bookmark className="w-5 h-5" />
+                                        )}
+                                    </Button>
                                 </div>
-                            )}
-
-                            {currentQuestion.context && (
-                                <div className="bg-muted/50 p-4 rounded-lg text-sm leading-relaxed">{currentQuestion.context}</div>
-                            )}
-
-                            <h3 className="text-xl font-semibold leading-tight">{currentQuestion.text}</h3>
-
-                            <div className="space-y-3 pt-2">
-                                <AnimatePresence>
-                                    {currentQuestion.options.map((option) => (
-                                        <motion.div
-                                            key={option.id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                        >
-                                            <div
-                                                className={cn(
-                                                    "border rounded-lg p-4 cursor-pointer transition-all",
-                                                    selectedAnswer === option.id && !isAnswerSubmitted && "border-primary ring-1 ring-primary",
-                                                    isAnswerSubmitted &&
-                                                    option.id === currentQuestion.correctAnswer &&
-                                                    "bg-green-50 border-green-500",
-                                                    isAnswerSubmitted &&
-                                                    selectedAnswer === option.id &&
-                                                    option.id !== currentQuestion.correctAnswer &&
-                                                    "bg-red-50 border-red-500",
-                                                    isAnswerSubmitted &&
-                                                    option.id !== currentQuestion.correctAnswer &&
-                                                    option.id !== selectedAnswer &&
-                                                    "opacity-60",
-                                                    !isAnswerSubmitted && "hover:border-primary hover:bg-muted/30",
-                                                )}
-                                                onClick={() => handleOptionSelect(option.id)}
-                                            >
-                                                <div className="flex items-start gap-3">
-                                                    <div
-                                                        className={cn(
-                                                            "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center border",
-                                                            selectedAnswer === option.id && !isAnswerSubmitted && "border-primary text-primary",
-                                                            isAnswerSubmitted &&
-                                                            option.id === currentQuestion.correctAnswer &&
-                                                            "bg-green-500 border-green-500 text-white",
-                                                            isAnswerSubmitted &&
-                                                            selectedAnswer === option.id &&
-                                                            option.id !== currentQuestion.correctAnswer &&
-                                                            "bg-red-500 border-red-500 text-white",
-                                                        )}
-                                                    >
-                                                        {isAnswerSubmitted && option.id === currentQuestion.correctAnswer && (
-                                                            <Check className="w-4 h-4" />
-                                                        )}
-                                                        {isAnswerSubmitted &&
-                                                            selectedAnswer === option.id &&
-                                                            option.id !== currentQuestion.correctAnswer && <X className="w-4 h-4" />}
-                                                        {(!isAnswerSubmitted ||
-                                                            (isAnswerSubmitted &&
-                                                                option.id !== currentQuestion.correctAnswer &&
-                                                                option.id !== selectedAnswer)) &&
-                                                            option.id}
-                                                    </div>
-                                                    <span className="text-base">{option.text}</span>
-                                                </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
                             </div>
+                            <Progress value={progress} className="h-1 absolute bottom-0 left-0 right-0" />
+                        </CardHeader>
 
-                            {isAnswerSubmitted && currentQuestion.explanation && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    className="bg-muted/50 p-4 rounded-lg mt-4"
-                                >
-                                    <h4 className="font-medium mb-1">Explanation:</h4>
-                                    <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
-                                </motion.div>
-                            )}
-                        </div>
-                    </CardContent>
+                        <CardContent className="p-6">
+                            <div className="space-y-6">
+                                {showTimer && (
+                                    <div className="flex justify-end">
+                                        <Badge
+                                            variant={timeLeft < 10 ? "destructive" : "outline"}
+                                            className={cn("px-3 py-1 flex items-center gap-1", timeLeft < 10 && "animate-pulse")}
+                                        >
+                                            <Clock className="w-4 h-4" />
+                                            {formatTime(timeLeft)}
+                                        </Badge>
+                                    </div>
+                                )}
 
-                    <CardFooter className="flex justify-between p-6 pt-2">
-                        <Button
-                            variant="outline"
-                            onClick={handlePrevious}
-                            disabled={currentIndex === 0}
-                            className="flex items-center gap-1"
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                            Previous
-                        </Button>
+                                {currentQuestion.context && (
+                                    <div className="bg-muted/50 p-4 rounded-lg text-sm leading-relaxed">{currentQuestion.context}</div>
+                                )}
 
-                        <div className="flex gap-2">
-                            {!isAnswerSubmitted ? (
-                                <Button onClick={handleSubmit} disabled={!selectedAnswer}>
-                                    Submit Answer
-                                </Button>
-                            ) : (
-                                <Button
-                                    onClick={handleNext}
-                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 flex items-center gap-1"
-                                >
-                                    {currentIndex < totalQuestions - 1 ? (
-                                        <>
-                                            Next <ChevronRight className="w-4 h-4" />
-                                        </>
-                                    ) : (
-                                        "Finish Quiz"
-                                    )}
-                                </Button>
-                            )}
-                        </div>
-                    </CardFooter>
-                </Card>
+                                <h3 className="text-xl font-semibold leading-tight">{currentQuestion.text}</h3>
+
+                                <div className="space-y-3 pt-2">
+                                    <AnimatePresence>
+                                        {currentQuestion.options.map((option) => (
+                                            <motion.div
+                                                key={option.id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                            >
+                                                <div
+                                                    className={cn(
+                                                        "border rounded-lg p-4 cursor-pointer transition-all",
+                                                        selectedAnswer === option.id && !isAnswerSubmitted && "border-primary ring-1 ring-primary",
+                                                        isAnswerSubmitted &&
+                                                        option.id === currentQuestion.correctAnswer &&
+                                                        "bg-green-50 border-green-500",
+                                                        isAnswerSubmitted &&
+                                                        selectedAnswer === option.id &&
+                                                        option.id !== currentQuestion.correctAnswer &&
+                                                        "bg-red-50 border-red-500",
+                                                        isAnswerSubmitted &&
+                                                        option.id !== currentQuestion.correctAnswer &&
+                                                        option.id !== selectedAnswer &&
+                                                        "opacity-60",
+                                                        !isAnswerSubmitted && "hover:border-primary hover:bg-muted/30",
+                                                    )}
+                                                    onClick={() => handleOptionSelect(option.id)}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div
+                                                            className={cn(
+                                                                "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center border",
+                                                                selectedAnswer === option.id && !isAnswerSubmitted && "border-primary text-primary",
+                                                                isAnswerSubmitted &&
+                                                                option.id === currentQuestion.correctAnswer &&
+                                                                "bg-green-500 border-green-500 text-white",
+                                                                isAnswerSubmitted &&
+                                                                selectedAnswer === option.id &&
+                                                                option.id !== currentQuestion.correctAnswer &&
+                                                                "bg-red-500 border-red-500 text-white",
+                                                            )}
+                                                        >
+                                                            {isAnswerSubmitted && option.id === currentQuestion.correctAnswer && (
+                                                                <Check className="w-4 h-4" />
+                                                            )}
+                                                            {isAnswerSubmitted &&
+                                                                selectedAnswer === option.id &&
+                                                                option.id !== currentQuestion.correctAnswer && <X className="w-4 h-4" />}
+                                                            {(!isAnswerSubmitted ||
+                                                                (isAnswerSubmitted &&
+                                                                    option.id !== currentQuestion.correctAnswer &&
+                                                                    option.id !== selectedAnswer)) &&
+                                                                option.id}
+                                                        </div>
+                                                        <span className="text-base">{option.text}</span>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+
+                                {isAnswerSubmitted && currentQuestion.explanation && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        className="bg-muted/50 p-4 rounded-lg mt-4"
+                                    >
+                                        <h4 className="font-medium mb-1">Explanation:</h4>
+                                        <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+                                    </motion.div>
+                                )}
+                            </div>
+                        </CardContent>
+
+                        <CardFooter className="flex justify-between p-6 pt-2">
+                            <Button
+                                variant="outline"
+                                onClick={handlePrevious}
+                                disabled={currentIndex === 0}
+                                className="flex items-center gap-1"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Previous
+                            </Button>
+
+                            <div className="flex gap-2">
+                                {!isAnswerSubmitted ? (
+                                    <Button onClick={handleSubmit} disabled={!selectedAnswer}>
+                                        Submit Answer
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={handleNext}
+                                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 flex items-center gap-1"
+                                    >
+                                        {currentIndex < totalQuestions - 1 ? (
+                                            <>
+                                                Next <ChevronRight className="w-4 h-4" />
+                                            </>
+                                        ) : (
+                                            "Finish Quiz"
+                                        )}
+                                    </Button>
+                                )}
+                            </div>
+                        </CardFooter>
+                    </Card>
+                </div>
             </div>
-        </div>
+        </>
     )
 }

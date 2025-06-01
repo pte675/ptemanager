@@ -242,7 +242,7 @@ export default function QuizPage() {
                     .map(([blankId, answer]) => `${blankId}: ${answer}`)
                     .join(" | ")}
             />
-            <div className="flex min-h-screen flex-col bg-gradient-to-b from-sky-50 to-white p-4">
+            <div className="flex min-h-screen flex-col bg-gradient-to-b from-sky-50 to-white dark:from-black dark:to-blacks p-4">
                 <div className="container mx-auto max-w-4xl">
                     <header className="mb-8 flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export default function QuizPage() {
                         </Badge>
                     </header>
 
-                    <Card className="border-0 shadow-lg">
+                    <Card className="dark:border-2 shadow-lg">
                         <CardHeader className="border-b bg-muted/20 pb-4">
                             <div className="flex items-center justify-between">
                                 <CardTitle>Fill in the Blanks</CardTitle>

@@ -119,13 +119,13 @@ export function Footer() {
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2 text-slate-400" />
                 <Link href="tel:+1234567890" className="text-slate-400 hover:text-white transition-colors">
-                  (123) 456-7890
+                  +91 931007589
                 </Link>
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 text-slate-400" />
                 <Link href="mailto:hello@lingualleap.com" className="text-slate-400 hover:text-white transition-colors">
-                  hello@lingualleap.com
+                  ptesupport@gmail.com
                 </Link>
               </li>
             </ul>

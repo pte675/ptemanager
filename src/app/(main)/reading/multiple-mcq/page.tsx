@@ -301,7 +301,7 @@ export default function MultiSelectQuiz() {
                     return option?.text || ""
                 }).join("; ")}
             />
-            <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-4 md:p-8">
+            <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-4 md:p-8">
                 <div className="max-w-4xl mx-auto">
                     <header className="mb-8 text-center">
                         <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-fuchsia-600 mb-2">
@@ -376,10 +376,10 @@ export default function MultiSelectQuiz() {
                                                     <div
                                                         className={cn(
                                                             "border rounded-lg p-4 cursor-pointer transition-all",
-                                                            isSelected && !isAnswerSubmitted && "border-primary ring-1 ring-primary bg-primary/5",
-                                                            isAnswerSubmitted && isCorrect && "bg-green-50 border-green-500",
-                                                            isAnswerSubmitted && isSelected && !isCorrect && "bg-red-50 border-red-500",
-                                                            !isAnswerSubmitted && "hover:border-primary hover:bg-muted/30",
+                                                            isSelected && !isAnswerSubmitted && "border-primary ring-1 ring-primary bg-primary/5 dark:bg-primary/10",
+                                                            isAnswerSubmitted && isCorrect && "bg-green-50 border-green-500 dark:bg-green-900 dark:border-green-400",
+                                                            isAnswerSubmitted && isSelected && !isCorrect && "bg-red-50 border-red-500 dark:bg-red-900 dark:border-red-400",
+                                                            !isAnswerSubmitted && "hover:border-primary hover:bg-muted/30 dark:hover:bg-muted/40"
                                                         )}
                                                         onClick={() => handleOptionToggle(option.id)}
                                                     >
@@ -395,23 +395,26 @@ export default function MultiSelectQuiz() {
                                                                     isAnswerSubmitted &&
                                                                     isSelected &&
                                                                     !isCorrect &&
-                                                                    "border-red-500 data-[state=checked]:bg-red-500 data-[state=checked]:text-white",
+                                                                    "border-red-500 data-[state=checked]:bg-red-500 data-[state=checked]:text-white"
                                                                 )}
                                                             />
                                                             <div className="grid gap-1.5 leading-none">
-                                                                <span className="text-base">{option.text}</span>
+                                                                <span className="text-base dark:text-gray-100">{option.text}</span>
                                                                 {isAnswerSubmitted && (
                                                                     <div className="flex items-center mt-1">
                                                                         {isCorrect && (
                                                                             <Badge
                                                                                 variant="outline"
-                                                                                className="bg-green-50 text-green-700 border-green-200 text-xs"
+                                                                                className="bg-green-50 text-green-700 border-green-200 text-xs dark:bg-green-800 dark:text-green-100 dark:border-green-700"
                                                                             >
                                                                                 Correct
                                                                             </Badge>
                                                                         )}
                                                                         {isSelected && !isCorrect && (
-                                                                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-xs">
+                                                                            <Badge
+                                                                                variant="outline"
+                                                                                className="bg-red-50 text-red-700 border-red-200 text-xs dark:bg-red-800 dark:text-red-100 dark:border-red-700"
+                                                                            >
                                                                                 Incorrect
                                                                             </Badge>
                                                                         )}
@@ -446,7 +449,7 @@ export default function MultiSelectQuiz() {
                                 )}
 
                                 {isAnswerSubmitted && (
-                                    <div className="bg-muted/30 p-4 rounded-lg">
+                                    <div className="bg-muted/30 p-4 rounded-lg  ">
                                         <div className="flex items-center justify-between">
                                             <h4 className="font-medium">Your score for this question:</h4>
                                             <Badge

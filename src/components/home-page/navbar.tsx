@@ -55,7 +55,7 @@ export function Navbar() {
             >
               Pricing
             </Link>
-            <LanguageSelector />
+            {/* <LanguageSelector /> */}
             <ThemeToggle />
             <Link href="https://chat.whatsapp.com/C0mnlnA1jqyKQJfPooQNi3">
               <Button className="w-full">Join Group</Button>
@@ -100,9 +100,9 @@ export function Navbar() {
             >
               Pricing
             </Link>
-            <div className="py-2">
+            {/* <div className="py-2">
               <LanguageSelector />
-            </div>
+            </div> */}
             <div className="pt-2">
               <Link href="https://chat.whatsapp.com/C0mnlnA1jqyKQJfPooQNi3">
                 <Button className="w-full">Join Group</Button>
