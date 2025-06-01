@@ -16,15 +16,54 @@ import Link from "next/link"
 export default function PTEWritingDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
-    const tasks: {
-        title: string
-        path: string
-        completed: number
-        total: number
-        streak: number
-        accuracy: number
-        color: "orange" | "amber"
-    }[] = [
+    const dashboardData: {
+        score: number
+        stats: {
+            title: string
+            value: string
+            description: string
+            icon: React.ReactNode
+            trend: "up" | "down" | "same"
+            trendValue: string
+        }[]
+        tasks: {
+            title: string
+            path: string
+            completed: number
+            total: number
+            streak: number
+            accuracy: number
+            color: "orange" | "amber"
+        }[]
+    } = {
+        score: 81,
+        stats: [
+            {
+                title: "Writing Progress",
+                value: "81%",
+                description: "Improved by 6% this week",
+                icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
+                trend: "up",
+                trendValue: "6%",
+            },
+            {
+                title: "Writing Time",
+                value: "8.4h",
+                description: "Time spent on writing tasks",
+                icon: <Clock className="h-5 w-5 text-blue-500" />,
+                trend: "up",
+                trendValue: "1.1h",
+            },
+            {
+                title: "Writing Level",
+                value: "Advanced",
+                description: "Top 20% among peers",
+                icon: <Award className="h-5 w-5 text-amber-500" />,
+                trend: "same",
+                trendValue: "",
+            },
+        ],
+        tasks: [
             {
                 title: "Essay Writing",
                 path: "essay-writing",
@@ -43,7 +82,9 @@ export default function PTEWritingDashboard() {
                 accuracy: 91,
                 color: "amber",
             },
-        ]
+        ],
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white dark:from-slate-950 dark:to-slate-900">
             <div className="container mx-auto px-4 py-8">
@@ -59,7 +100,7 @@ export default function PTEWritingDashboard() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <OverallScoreCard score={81} />
+                            <OverallScoreCard score={dashboardData.score} />
                             <Button className="hidden md:flex gap-2 bg-orange-600 hover:bg-orange-700">
                                 <PlusCircle className="h-4 w-4" />
                                 New Practice
@@ -77,30 +118,17 @@ export default function PTEWritingDashboard() {
 
                     <TabsContent value="overview" className="space-y-6">
                         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <StatsCard
-                                title="Writing Progress"
-                                value="81%"
-                                description="Improved by 6% this week"
-                                icon={<BarChart3 className="h-5 w-5 text-emerald-500" />}
-                                trend="up"
-                                trendValue="6%"
-                            />
-                            <StatsCard
-                                title="Writing Time"
-                                value="8.4h"
-                                description="Time spent on writing tasks"
-                                icon={<Clock className="h-5 w-5 text-blue-500" />}
-                                trend="up"
-                                trendValue="1.1h"
-                            />
-                            <StatsCard
-                                title="Writing Level"
-                                value="Advanced"
-                                description="Top 20% among peers"
-                                icon={<Award className="h-5 w-5 text-amber-500" />}
-                                trend="same"
-                                trendValue=""
-                            />
+                            {dashboardData.stats.map((stat, index) => (
+                                <StatsCard
+                                    key={index}
+                                    title={stat.title}
+                                    value={stat.value}
+                                    description={stat.description}
+                                    icon={stat.icon}
+                                    trend={stat.trend}
+                                    trendValue={stat.trendValue}
+                                />
+                            ))}
                         </section>
 
                         <section>
@@ -111,7 +139,7 @@ export default function PTEWritingDashboard() {
                                 </Button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {tasks.map((task) => (
+                                {dashboardData.tasks.map((task) => (
                                     <QuestionTypeCard
                                         key={task.path}
                                         title={task.title}

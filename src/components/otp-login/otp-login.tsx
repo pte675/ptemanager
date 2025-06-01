@@ -34,7 +34,7 @@ const uniqueCountryCodes: CountryData[] = Array.from(
     new Map(countryCodes.map((item) => [item.code, item])).values()
 );
 
-export default function OtpLogin({ onSuccess }: { onSuccess: () => void }) {
+export default function OtpLogin({ onSuccess }: { onSuccess: (phone: string) => void }) {
     const [step, setStep] = useState<Step>("phone")
     const [countryCode, setCountryCode] = useState("+1")
     const [phoneNumber, setPhoneNumber] = useState("")
@@ -127,16 +127,24 @@ export default function OtpLogin({ onSuccess }: { onSuccess: () => void }) {
                 }),
             })
 
-            if (!res.ok) throw new Error("Failed to send OTP")
+            if (!res.ok) {
+                const data = await res.json();
+
+                if (res.status === 429) {
+                    toast.error("We're experiencing high traffic 🚀 — due to overwhelming demand, we're offering trial access today only.");
+                }
+
+                const error = new Error(data.error || "Failed to send OTP");
+                (error as any).status = res.status;
+                throw error;
+            }
 
             setStep("verify")
             setResendTimer(60)
             setTimeout(() => otpRefs.current[0]?.focus(), 600)
         } catch (err: any) {
-            // setError("Could not send OTP. Try again.");
 
             //if whapi failed to send otp
-
             toast("OTP services are under maintenance. Will be fixed within 24 hours. Enjoy free login for now 🎉")
 
             setIsSuccess(true)
@@ -144,8 +152,8 @@ export default function OtpLogin({ onSuccess }: { onSuccess: () => void }) {
 
             setTimeout(() => {
                 setStep("success")
-                onSuccess?.()
-            }, 1200)
+                onSuccess?.("") // no phone number, access granted without verification
+            }, 1400)
         } finally {
             setIsLoading(false)
         }
@@ -189,7 +197,10 @@ export default function OtpLogin({ onSuccess }: { onSuccess: () => void }) {
 
             setTimeout(() => {
                 setStep("success")
-                onSuccess?.()
+                //send number to layout.tsx
+                onSuccess?.(`${countryCode}${phoneNumber}`)
+
+
             }, 1200)
         } else {
             setError("Invalid OTP. Please try again.")

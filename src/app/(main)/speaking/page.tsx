@@ -15,22 +15,101 @@ import Link from "next/link"
 export default function PTESpeakingDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
-    const tasks: {
-        title: string
-        path: string
-        completed: number
-        total: number
-        streak: number
-        accuracy: number
-        color: "purple" | "indigo" | "fuchsia" | "violet" | "pink"
-    }[] = [
-            { title: "Read Aloud", path: "read-aloud", completed: 150, total: 200, streak: 5, accuracy: 86, color: "purple" },
-            { title: "Repeat Sentence", path: "repeat-sentence", completed: 180, total: 200, streak: 9, accuracy: 91, color: "indigo" },
-            { title: "Describe Image", path: "describe-image", completed: 132, total: 150, streak: 6, accuracy: 77, color: "fuchsia" },
-            { title: "Retell Lecture", path: "retell-lecture", completed: 98, total: 120, streak: 4, accuracy: 83, color: "violet" },
-            { title: "Short Answer Questions", path: "short-answer-questions", completed: 190, total: 200, streak: 10, accuracy: 95, color: "pink" },
-        ]
-
+    const dashboardData: {
+        overallScore: number
+        stats: {
+            title: string
+            value: string
+            description: string
+            icon: React.ReactNode
+            trend: "up" | "same" | "down"
+            trendValue: string
+        }[]
+        tasks: {
+            title: string
+            path: string
+            completed: number
+            total: number
+            streak: number
+            accuracy: number
+            color: "purple" | "indigo" | "fuchsia" | "violet" | "pink"
+        }[]
+    } = {
+        overallScore: 78,
+        stats: [
+            {
+                title: "Speaking Progress",
+                value: "78%",
+                description: "Improved by 8% this week",
+                icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
+                trend: "up",
+                trendValue: "8%",
+            },
+            {
+                title: "Practice Time",
+                value: "10.2h",
+                description: "Total time spent on speaking tasks",
+                icon: <Clock className="h-5 w-5 text-blue-500" />,
+                trend: "up",
+                trendValue: "1.5h",
+            },
+            {
+                title: "Confidence Level",
+                value: "Good",
+                description: "Better than 65% of learners",
+                icon: <Award className="h-5 w-5 text-amber-500" />,
+                trend: "same",
+                trendValue: "",
+            },
+        ],
+        tasks: [
+            {
+                title: "Read Aloud",
+                path: "read-aloud",
+                completed: 150,
+                total: 200,
+                streak: 5,
+                accuracy: 86,
+                color: "purple",
+            },
+            {
+                title: "Repeat Sentence",
+                path: "repeat-sentence",
+                completed: 180,
+                total: 200,
+                streak: 9,
+                accuracy: 91,
+                color: "indigo",
+            },
+            {
+                title: "Describe Image",
+                path: "describe-image",
+                completed: 132,
+                total: 150,
+                streak: 6,
+                accuracy: 77,
+                color: "fuchsia",
+            },
+            {
+                title: "Retell Lecture",
+                path: "retell-lecture",
+                completed: 98,
+                total: 120,
+                streak: 4,
+                accuracy: 83,
+                color: "violet",
+            },
+            {
+                title: "Short Answer Questions",
+                path: "short-answer-questions",
+                completed: 190,
+                total: 200,
+                streak: 10,
+                accuracy: 95,
+                color: "pink",
+            },
+        ],
+    }
     return (
         <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white dark:from-slate-950 dark:to-slate-900">
             <div className="container mx-auto px-4 py-8">
@@ -46,7 +125,7 @@ export default function PTESpeakingDashboard() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <OverallScoreCard score={78} />
+                            <OverallScoreCard score={dashboardData.overallScore} />
                             <Button className="hidden md:flex gap-2 bg-yellow-600 hover:bg-yellow-700">
                                 <PlusCircle className="h-4 w-4" />
                                 New Practice
@@ -64,30 +143,17 @@ export default function PTESpeakingDashboard() {
 
                     <TabsContent value="overview" className="space-y-6">
                         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <StatsCard
-                                title="Speaking Progress"
-                                value="78%"
-                                description="Improved by 8% this week"
-                                icon={<BarChart3 className="h-5 w-5 text-emerald-500" />}
-                                trend="up"
-                                trendValue="8%"
-                            />
-                            <StatsCard
-                                title="Practice Time"
-                                value="10.2h"
-                                description="Total time spent on speaking tasks"
-                                icon={<Clock className="h-5 w-5 text-blue-500" />}
-                                trend="up"
-                                trendValue="1.5h"
-                            />
-                            <StatsCard
-                                title="Confidence Level"
-                                value="Good"
-                                description="Better than 65% of learners"
-                                icon={<Award className="h-5 w-5 text-amber-500" />}
-                                trend="same"
-                                trendValue=""
-                            />
+                            {dashboardData.stats.map((stat, idx) => (
+                                <StatsCard
+                                    key={idx}
+                                    title={stat.title}
+                                    value={stat.value}
+                                    description={stat.description}
+                                    icon={stat.icon}
+                                    trend={stat.trend}
+                                    trendValue={stat.trendValue}
+                                />
+                            ))}
                         </section>
 
                         <section>
@@ -98,7 +164,7 @@ export default function PTESpeakingDashboard() {
                                 </Button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {tasks.map((task) => (
+                                {dashboardData.tasks.map((task) => (
                                     <QuestionTypeCard
                                         key={task.path}
                                         title={task.title}

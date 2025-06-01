@@ -16,15 +16,63 @@ import Link from "next/link"
 export default function PTEListeningDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
-    const tasks = [
-        { title: "Fill in the Blanks", path: "fill-in-the-blanks", completed: 120, total: 150, streak: 5, accuracy: 87, color: "cyan" },
-        { title: "Highlight Correct Summary", path: "highlight-correct-summary", completed: 95, total: 120, streak: 6, accuracy: 82, color: "teal" },
-        { title: "Highlight Incorrect Words", path: "highlight-incorrect-words", completed: 88, total: 100, streak: 4, accuracy: 85, color: "sky" },
-        { title: "Multiple MCQ", path: "multiple-mcq", completed: 102, total: 120, streak: 3, accuracy: 79, color: "blue" },
-        { title: "Single MCQ", path: "single-mcq", completed: 110, total: 130, streak: 7, accuracy: 90, color: "indigo" },
-        { title: "Summarize Spoken Text", path: "summarize-text-spoken", completed: 77, total: 90, streak: 6, accuracy: 84, color: "violet" },
-        { title: "Writing from Dictation", path: "writing-from-dictation", completed: 130, total: 150, streak: 9, accuracy: 93, color: "purple" },
-    ]
+    const dashboardData: {
+        score: number
+        stats: {
+            title: string
+            value: string
+            description: string
+            icon: React.ReactNode
+            trend: "up" | "down" | "same"
+            trendValue: string
+        }[]
+        tasks: {
+            title: string
+            path: string
+            completed: number
+            total: number
+            streak: number
+            accuracy: number
+            color: "cyan" | "teal" | "sky" | "blue" | "indigo" | "violet" | "purple"
+        }[]
+    } = {
+        score: 83,
+        stats: [
+            {
+                title: "Listening Progress",
+                value: "83%",
+                description: "Up by 7% this week",
+                icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
+                trend: "up",
+                trendValue: "7%",
+            },
+            {
+                title: "Listening Time",
+                value: "11.2h",
+                description: "Time spent on listening practice",
+                icon: <Clock className="h-5 w-5 text-blue-500" />,
+                trend: "up",
+                trendValue: "2.1h",
+            },
+            {
+                title: "Accuracy",
+                value: "High",
+                description: "Better than 70% of peers",
+                icon: <Award className="h-5 w-5 text-amber-500" />,
+                trend: "same",
+                trendValue: "",
+            },
+        ],
+        tasks: [
+            { title: "Fill in the Blanks", path: "fill-in-the-blanks", completed: 120, total: 150, streak: 5, accuracy: 87, color: "cyan" },
+            { title: "Highlight Correct Summary", path: "highlight-correct-summary", completed: 95, total: 120, streak: 6, accuracy: 82, color: "teal" },
+            { title: "Highlight Incorrect Words", path: "highlight-incorrect-words", completed: 88, total: 100, streak: 4, accuracy: 85, color: "sky" },
+            { title: "Multiple MCQ", path: "multiple-mcq", completed: 102, total: 120, streak: 3, accuracy: 79, color: "blue" },
+            { title: "Single MCQ", path: "single-mcq", completed: 110, total: 130, streak: 7, accuracy: 90, color: "indigo" },
+            { title: "Summarize Spoken Text", path: "summarize-text-spoken", completed: 77, total: 90, streak: 6, accuracy: 84, color: "violet" },
+            { title: "Writing from Dictation", path: "writing-from-dictation", completed: 130, total: 150, streak: 9, accuracy: 93, color: "purple" },
+        ]
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -41,7 +89,7 @@ export default function PTEListeningDashboard() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <OverallScoreCard score={83} />
+                            <OverallScoreCard score={dashboardData.score} />
                             <Button className="hidden md:flex gap-2 bg-sky-600 hover:bg-sky-700">
                                 <PlusCircle className="h-4 w-4" />
                                 New Practice
@@ -59,9 +107,17 @@ export default function PTEListeningDashboard() {
 
                     <TabsContent value="overview" className="space-y-6">
                         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <StatsCard title="Listening Progress" value="83%" description="Up by 7% this week" icon={<BarChart3 className="h-5 w-5 text-emerald-500" />} trend="up" trendValue="7%" />
-                            <StatsCard title="Listening Time" value="11.2h" description="Time spent on listening practice" icon={<Clock className="h-5 w-5 text-blue-500" />} trend="up" trendValue="2.1h" />
-                            <StatsCard title="Accuracy" value="High" description="Better than 70% of peers" icon={<Award className="h-5 w-5 text-amber-500" />} trend="same" trendValue="" />
+                            {dashboardData.stats.map((stat, index) => (
+                                <StatsCard
+                                    key={index}
+                                    title={stat.title}
+                                    value={stat.value}
+                                    description={stat.description}
+                                    icon={stat.icon}
+                                    trend={stat.trend}
+                                    trendValue={stat.trendValue}
+                                />
+                            ))}
                         </section>
 
                         <section>
@@ -69,7 +125,7 @@ export default function PTEListeningDashboard() {
                                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Question Types</h2>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {tasks.map(task => (
+                                {dashboardData.tasks.map(task => (
                                     <QuestionTypeCard
                                         key={task.path}
                                         title={task.title}

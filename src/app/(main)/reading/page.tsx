@@ -15,21 +15,101 @@ import Link from "next/link"
 export default function PTEReadingDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
-    const tasks: {
-        title: string
-        path: string
-        completed: number
-        total: number
-        streak: number
-        accuracy: number
-        color: "purple" | "indigo" | "fuchsia" | "violet" | "pink"
-    }[] = [
-            { title: "MCQ - Single Answer", path: "single-mcq", completed: 176, total: 200, streak: 4, accuracy: 88, color: "purple" },
-            { title: "MCQ - Multiple Answers", path: "multiple-mcq", completed: 153, total: 200, streak: 4, accuracy: 77, color: "indigo" },
-            { title: "Re-order Paragraphs", path: "re-order", completed: 412, total: 500, streak: 85, accuracy: 82, color: "fuchsia" },
-            { title: "Fill in the Blanks", path: "fill-in-the-blanks", completed: 750, total: 800, streak: 164, accuracy: 94, color: "violet" },
-            { title: "Reading & Writing Fill in Blanks", path: "reading-and-writing-fill-in-the-blanks", completed: 513, total: 600, streak: 90, accuracy: 85, color: "pink" },
-        ]
+    const dashboardData: {
+        score: number
+        stats: {
+            title: string
+            value: string
+            description: string
+            icon: React.ReactNode
+            trend: "up" | "down" | "same"
+            trendValue: string
+        }[]
+        tasks: {
+            title: string
+            path: string
+            completed: number
+            total: number
+            streak: number
+            accuracy: number
+            color: "purple" | "indigo" | "fuchsia" | "violet" | "pink"
+        }[]
+    } = {
+        score: 85,
+        stats: [
+            {
+                title: "Weekly Progress",
+                value: "87%",
+                description: "You've improved by 12% this week",
+                icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
+                trend: "up",
+                trendValue: "12%",
+            },
+            {
+                title: "Study Time",
+                value: "14.5h",
+                description: "Total time spent on reading exercises",
+                icon: <Clock className="h-5 w-5 text-blue-500" />,
+                trend: "up",
+                trendValue: "2.3h",
+            },
+            {
+                title: "Mastery Level",
+                value: "Advanced",
+                description: "Top 15% of all PTE students",
+                icon: <Award className="h-5 w-5 text-amber-500" />,
+                trend: "same",
+                trendValue: "",
+            },
+        ],
+        tasks: [
+            {
+                title: "MCQ - Single Answer",
+                path: "single-mcq",
+                completed: 176,
+                total: 200,
+                streak: 4,
+                accuracy: 88,
+                color: "purple",
+            },
+            {
+                title: "MCQ - Multiple Answers",
+                path: "multiple-mcq",
+                completed: 153,
+                total: 200,
+                streak: 4,
+                accuracy: 77,
+                color: "indigo",
+            },
+            {
+                title: "Re-order Paragraphs",
+                path: "re-order",
+                completed: 412,
+                total: 500,
+                streak: 85,
+                accuracy: 82,
+                color: "fuchsia",
+            },
+            {
+                title: "Fill in the Blanks",
+                path: "fill-in-the-blanks",
+                completed: 750,
+                total: 800,
+                streak: 164,
+                accuracy: 94,
+                color: "violet",
+            },
+            {
+                title: "Reading & Writing Fill in Blanks",
+                path: "reading-and-writing-fill-in-the-blanks",
+                completed: 513,
+                total: 600,
+                streak: 90,
+                accuracy: 85,
+                color: "pink",
+            },
+        ],
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -46,7 +126,7 @@ export default function PTEReadingDashboard() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <OverallScoreCard score={85} />
+                            <OverallScoreCard score={dashboardData.score} />
                             <Button className="hidden md:flex gap-2 bg-purple-600 hover:bg-purple-700">
                                 <PlusCircle className="h-4 w-4" />
                                 New Practice
@@ -64,30 +144,17 @@ export default function PTEReadingDashboard() {
 
                     <TabsContent value="overview" className="space-y-6">
                         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <StatsCard
-                                title="Weekly Progress"
-                                value="87%"
-                                description="You've improved by 12% this week"
-                                icon={<BarChart3 className="h-5 w-5 text-emerald-500" />}
-                                trend="up"
-                                trendValue="12%"
-                            />
-                            <StatsCard
-                                title="Study Time"
-                                value="14.5h"
-                                description="Total time spent on reading exercises"
-                                icon={<Clock className="h-5 w-5 text-blue-500" />}
-                                trend="up"
-                                trendValue="2.3h"
-                            />
-                            <StatsCard
-                                title="Mastery Level"
-                                value="Advanced"
-                                description="Top 15% of all PTE students"
-                                icon={<Award className="h-5 w-5 text-amber-500" />}
-                                trend="same"
-                                trendValue=""
-                            />
+                            {dashboardData.stats.map((stat, index) => (
+                                <StatsCard
+                                    key={index}
+                                    title={stat.title}
+                                    value={stat.value}
+                                    description={stat.description}
+                                    icon={stat.icon}
+                                    trend={stat.trend}
+                                    trendValue={stat.trendValue}
+                                />
+                            ))}
                         </section>
 
                         <section>
@@ -98,7 +165,7 @@ export default function PTEReadingDashboard() {
                                 </Button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {tasks.map((task) => (
+                                {dashboardData.tasks.map((task) => (
                                     <QuestionTypeCard
                                         key={task.path}
                                         title={task.title}
