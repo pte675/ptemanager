@@ -56,11 +56,18 @@ export default function MultipleChoiceInterface() {
         id: currentRaw.id,
         title: currentRaw.title,
         question: currentRaw.question.split("###")[1].trim(),
-        options: ["A", "B", "C", "D", "E"].map((letter, i) => ({
-            id: letter.toLowerCase(),
-            text: currentRaw.question.split("###")[i + 2]?.trim().slice(3).trim(),
-            isCorrect: correctLetters.includes(letter),
-        })),
+        options: currentRaw.question
+            .split("###")
+            .slice(2)
+            .map((optionText, i) => {
+                const letter = String.fromCharCode(65 + i) // "A", "B", "C", ...
+                return {
+                    id: letter.toLowerCase(),
+                    text: optionText.trim().slice(3).trim(), // Remove "A) ", "B) ", etc.
+                    isCorrect: correctLetters.includes(letter),
+                }
+            }),
+
         audioUrl: currentRaw.audio.includes("uc?id=")
             ? currentRaw.audio.replace(
                 /https:\/\/drive\.google\.com\/uc\?id=([^&]+)/,
@@ -279,6 +286,39 @@ export default function MultipleChoiceInterface() {
                 <div>Your score: {score}%. You selected {userCorrectCount} correct and {userIncorrectCount} incorrect options.</div>
             </div>
         )
+
+        // Update progress in localStorage
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+
+        const prevData = prevProgress?.listening?.["multiple-mcq"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isCurrentFullyCorrect = userCorrectCount === correctAnswers.length && userIncorrectCount === 0
+        const isNewQuestion = SAMPLE_QUESTION.id > prevData.completed
+        const newCompleted = isNewQuestion ? SAMPLE_QUESTION.id : prevData.completed
+        const newStreak = isCurrentFullyCorrect ? prevData.streak + 1 : 0
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCurrentFullyCorrect ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCurrentFullyCorrect ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const updatedProgress = {
+            ...prevProgress,
+            listening: {
+                ...prevProgress.listening,
+                "multiple-mcq": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
     }
 
     // Reset exercise

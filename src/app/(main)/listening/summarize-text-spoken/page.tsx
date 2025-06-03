@@ -214,6 +214,44 @@ export default function SummarizeSpokenTextInterface() {
 
     // Handle form submission
     const handleSubmit = async () => {
+
+        // Update progress in localStorage
+        const updateLocalStorage = (result: { score?: string }) => {
+            const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+
+            const prevData = prevProgress?.listening?.["summarize-text-spoken"] || {
+                completed: 0,
+                accuracy: null,
+                streak: 0,
+            }
+
+            const isCurrentSummaryGood = result?.score && Number(result.score) >= 4
+
+            const isNewQuestion = SAMPLE_LECTURE.id > prevData.completed
+            const newCompleted = isNewQuestion ? SAMPLE_LECTURE.id : prevData.completed
+            const newStreak = isCurrentSummaryGood ? prevData.streak + 1 : 0
+            const newAccuracy = isNewQuestion
+                ? prevData.accuracy === null
+                    ? (isCurrentSummaryGood ? 1 : 0)
+                    : ((prevData.accuracy * prevData.completed) + (isCurrentSummaryGood ? 1 : 0)) / newCompleted
+                : prevData.accuracy
+
+            const updatedProgress = {
+                ...prevProgress,
+                listening: {
+                    ...prevProgress.listening,
+                    "summarize-text-spoken": {
+                        completed: newCompleted,
+                        accuracy: parseFloat(newAccuracy.toFixed(2)),
+                        streak: newStreak,
+                    },
+                },
+            }
+
+            localStorage.setItem("progress", JSON.stringify(updatedProgress))
+        }
+
+        //rest logic to handle submission
         if (wordCount < SAMPLE_LECTURE.wordCountTarget.min || wordCount > SAMPLE_LECTURE.wordCountTarget.max) {
             toast(
                 `❗ Word count should be between ${SAMPLE_LECTURE.wordCountTarget.min}-${SAMPLE_LECTURE.wordCountTarget.max}. You wrote ${wordCount} words.`
@@ -223,7 +261,6 @@ export default function SummarizeSpokenTextInterface() {
 
         setHasSubmitted(true)
         setIsTimerRunning(false)
-
         toast(`✅ Your ${wordCount}-word summary has been submitted successfully.`)
 
         try {
@@ -241,6 +278,7 @@ export default function SummarizeSpokenTextInterface() {
             const result = await res.json();
 
             setEvaluationResult(result);
+            updateLocalStorage(result);
 
             toast.success("Evaluation Complete", {
                 description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,
@@ -256,6 +294,7 @@ export default function SummarizeSpokenTextInterface() {
             });
         }
     }
+
 
     // Reset exercise
     const resetExercise = () => {

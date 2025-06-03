@@ -244,6 +244,44 @@ export default function HighlightIncorrectWordInterface() {
         ).length
 
         toast.success(`You identified ${correctAnswers} of ${exercise.incorrectWords.length} with ${incorrectSelections} wrong selections.`)
+
+        //update progress in local storage
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+
+        const prevData = prevProgress?.listening?.["highlight-incorrect-words"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isCurrentCorrect =
+            exercise.incorrectWords.length > 0 &&
+            selectedWords.length === exercise.incorrectWords.length &&
+            selectedWords.every((idx) => exercise.incorrectWords.some((w) => w.index === idx))
+
+        const isNewQuestion = exercise.id > prevData.completed
+
+        const newCompleted = isNewQuestion ? exercise.id : prevData.completed
+        const newStreak = isCurrentCorrect ? prevData.streak + 1 : 0
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCurrentCorrect ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCurrentCorrect ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const updatedProgress = {
+            ...prevProgress,
+            listening: {
+                ...prevProgress.listening,
+                "highlight-incorrect-words": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
     }
 
     // Reset exercise

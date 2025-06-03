@@ -198,6 +198,39 @@ export default function DictationExercise() {
         const calculatedAccuracy = correctWords.length > 0 ? Math.round((correctCount / correctWords.length) * 100) : 0
 
         setAccuracy(calculatedAccuracy)
+
+        // Update local storage with progress
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+
+        const prevData = prevProgress?.listening?.["writing-from-dictation"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isCurrentAnswerGood = calculatedAccuracy >= 80
+        const isNewQuestion = Number(currentExercise.id.split("-")[1]) > prevData.completed
+        const newCompleted = isNewQuestion ? Number(currentExercise.id.split("-")[1]) : prevData.completed
+        const newStreak = isCurrentAnswerGood ? prevData.streak + 1 : 0
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCurrentAnswerGood ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCurrentAnswerGood ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const updatedProgress = {
+            ...prevProgress,
+            listening: {
+                ...prevProgress.listening,
+                "writing-from-dictation": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
     }
 
     const toggleBookmark = () => {

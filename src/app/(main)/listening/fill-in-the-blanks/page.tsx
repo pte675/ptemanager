@@ -247,6 +247,44 @@ export default function ListeningFillBlanksInterface() {
 
         toast.success(`You got ${correctAnswers} out of ${exercise.blanks.length} correct.`)
 
+        const isCurrentQuestionRight = correctAnswers === exercise.blanks.length
+        console.log("Is current question fully correct?", isCurrentQuestionRight)
+
+        //calculate accuracy based on prev accuracy and isCurrentQuestionRight
+        //update iscompleted by knowing which current question is completed 
+        //update streak by using prev streak and isCurrentQuestionRight
+
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+
+        const prevData = prevProgress?.listening?.["fill-in-the-blanks"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isNewQuestion = exercise.id > prevData.completed
+
+        const newCompleted = isNewQuestion ? exercise.id : prevData.completed
+        const newStreak = isCurrentQuestionRight ? prevData.streak + 1 : 0
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCurrentQuestionRight ? 1 : 0) // First question ever
+                : ((prevData.accuracy * prevData.completed) + (isCurrentQuestionRight ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const updatedProgress = {
+            ...prevProgress,
+            listening: {
+                ...prevProgress.listening,
+                "fill-in-the-blanks": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
     }
 
     // Reset exercise

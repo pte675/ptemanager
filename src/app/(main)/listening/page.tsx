@@ -1,10 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import {
-    BookOpen, Flame, CheckCircle, BarChart3, Clock, Award,
-    ChevronRight, PlusCircle, Sparkles
-} from "lucide-react"
+import { useEffect, useState } from "react"
+import { BookOpen, Flame, CheckCircle, BarChart3, Clock, Award, ChevronRight, PlusCircle, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,14 +13,15 @@ import Link from "next/link"
 export default function PTEListeningDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
-    const dashboardData: {
+    const [dashboardData, setDashboardData] = useState<{
         score: number
         stats: {
             title: string
             value: string
             description: string
             icon: React.ReactNode
-            trend: "up" | "down" | "same"
+            // trend: "up" | "down" | "same"
+            trend: string
             trendValue: string
         }[]
         tasks: {
@@ -33,46 +31,75 @@ export default function PTEListeningDashboard() {
             total: number
             streak: number
             accuracy: number
-            color: "cyan" | "teal" | "sky" | "blue" | "indigo" | "violet" | "purple"
+            // color: "cyan" | "teal" | "sky" | "blue" | "indigo" | "violet" | "purple"
+            color: string
         }[]
-    } = {
-        score: 83,
-        stats: [
-            {
-                title: "Listening Progress",
-                value: "83%",
-                description: "Up by 7% this week",
-                icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
-                trend: "up",
-                trendValue: "7%",
-            },
-            {
-                title: "Listening Time",
-                value: "11.2h",
-                description: "Time spent on listening practice",
-                icon: <Clock className="h-5 w-5 text-blue-500" />,
-                trend: "up",
-                trendValue: "2.1h",
-            },
-            {
-                title: "Accuracy",
-                value: "High",
-                description: "Better than 70% of peers",
-                icon: <Award className="h-5 w-5 text-amber-500" />,
-                trend: "same",
-                trendValue: "",
-            },
-        ],
-        tasks: [
-            { title: "Fill in the Blanks", path: "fill-in-the-blanks", completed: 120, total: 150, streak: 5, accuracy: 87, color: "cyan" },
-            { title: "Highlight Correct Summary", path: "highlight-correct-summary", completed: 95, total: 120, streak: 6, accuracy: 82, color: "teal" },
-            { title: "Highlight Incorrect Words", path: "highlight-incorrect-words", completed: 88, total: 100, streak: 4, accuracy: 85, color: "sky" },
-            { title: "Multiple MCQ", path: "multiple-mcq", completed: 102, total: 120, streak: 3, accuracy: 79, color: "blue" },
-            { title: "Single MCQ", path: "single-mcq", completed: 110, total: 130, streak: 7, accuracy: 90, color: "indigo" },
-            { title: "Summarize Spoken Text", path: "summarize-text-spoken", completed: 77, total: 90, streak: 6, accuracy: 84, color: "violet" },
-            { title: "Writing from Dictation", path: "writing-from-dictation", completed: 130, total: 150, streak: 9, accuracy: 93, color: "purple" },
-        ]
-    }
+    } | null>(null)
+
+    useEffect(() => {
+        const raw = localStorage.getItem("progress")
+        if (!raw) return
+
+        try {
+            const progress = JSON.parse(raw)
+            const listening = progress.listening || {}
+
+            const tasks = [
+                { title: "Fill in the Blanks", path: "fill-in-the-blanks", total: 150, color: "cyan" },
+                { title: "Highlight Correct Summary", path: "highlight-correct-summary", total: 120, color: "teal" },
+                { title: "Highlight Incorrect Words", path: "highlight-incorrect-words", total: 100, color: "sky" },
+                { title: "Multiple MCQ", path: "multiple-mcq", total: 120, color: "blue" },
+                { title: "Single MCQ", path: "single-mcq", total: 130, color: "indigo" },
+                { title: "Summarize Spoken Text", path: "summarize-text-spoken", total: 90, color: "violet" },
+                { title: "Writing from Dictation", path: "writing-from-dictation", total: 150, color: "purple" }
+            ].map(task => {
+                const data = listening[task.path] || { completed: 0, accuracy: 0, streak: 0 }
+                return {
+                    ...task,
+                    completed: data.completed,
+                    accuracy: data.accuracy ?? 0,
+                    streak: data.streak ?? 0
+                }
+            })
+
+            const score = Math.round(
+                tasks.reduce((acc, task) => acc + (listening[task.path]?.accuracy || 0), 0) / tasks.length
+            )
+
+            const stats = [
+                {
+                    title: "Listening Progress",
+                    value: `${score}%`,
+                    description: "Based on recent activity",
+                    icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
+                    trend: "same",
+                    trendValue: "",
+                },
+                {
+                    title: "Listening Time",
+                    value: "—",
+                    description: "Time tracking not implemented",
+                    icon: <Clock className="h-5 w-5 text-blue-500" />,
+                    trend: "same",
+                    trendValue: "",
+                },
+                {
+                    title: "Accuracy",
+                    value: score === 0 ? "—" : score > 80 ? "High" : score > 50 ? "Medium" : "Low",
+                    description: "Compared with top learners",
+                    icon: <Award className="h-5 w-5 text-amber-500" />,
+                    trend: "same",
+                    trendValue: "",
+                }
+            ]
+
+            setDashboardData({ score, stats, tasks })
+        } catch (err) {
+            console.error("Failed to load progress from localStorage", err)
+        }
+    }, [])
+
+    if (!dashboardData) return null
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -251,7 +278,7 @@ function QuestionTypeCard({ title, completed, total, streak, accuracy, color, on
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex justify-between items-center">
                         {title}
-                        <span className={`text-2xl font-bold ${colorMap[color]}`}>{completed}</span>
+                        <span className={`text-2xl font-bold ${colorMap[color]}`}>{completed}/{total}</span>
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="pb-2">

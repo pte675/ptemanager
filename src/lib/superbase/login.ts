@@ -5,6 +5,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+
 /**
  * Fast login: insert phone if new, do nothing if exists
  * Works for new + returning users across devices
@@ -16,7 +17,7 @@ export async function loginWithPhone(phone: string): Promise<{ success: boolean 
   try {
     const { error } = await supabase
       .from("users")
-      .upsert([{ phone }], { onConflict: "phone" }) // avoids duplicate insert
+      .upsert([{ phone }], { onConflict: "phone" })
 
     if (error) throw error
 

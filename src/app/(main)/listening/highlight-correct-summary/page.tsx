@@ -41,7 +41,7 @@ import rawQuestions from "./highlight-correct-summary.json"
 import AIChatSidebar from "@/components/ai-sidebar/ai-sidebar"
 
 const SAMPLE_QUESTIONS = rawQuestions.map((item) => {
-    const correctId = item.answer.match(/[A-D]/)?.[0]?.toLowerCase() || ""
+    const correctId = item.answer.split("###Transcript:")[0]?.trim().slice(-1).toLowerCase()
     const options = item.question
         .split("###")
         .filter(opt => /^[A-D]\)/.test(opt.trim()))
@@ -235,6 +235,39 @@ export default function HighlightCorrectSummaryInterface() {
 
         toast(isCorrect ?
             "Correct! You selected the correct summary." : "Incorrect. The correct answer has been highlighted.")
+
+
+        // Update progress in localStorage
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+        const prevData = prevProgress?.listening?.["highlight-correct-summary"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isNewQuestion = currentQuestion.id > prevData.completed
+        const newCompleted = isNewQuestion ? currentQuestion.id : prevData.completed
+        const newStreak = isCorrect ? prevData.streak + 1 : 0
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCorrect ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCorrect ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const updatedProgress = {
+            ...prevProgress,
+            listening: {
+                ...prevProgress.listening,
+                "highlight-correct-summary": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
+
     }
 
     // Reset question

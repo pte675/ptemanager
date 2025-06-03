@@ -15,20 +15,18 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     // Revert back if user change localStorage manually
     useEffect(() => {
         const interval = setInterval(() => {
-            const stored = localStorage.getItem("user_phone")
-
-            // If tampered or deleted, restore
-            if (!stored || stored !== backup_localstorage) {
+            const current = localStorage.getItem("user_phone")
+            if (current !== backup_localstorage) {
                 if (backup_localstorage && backup_localstorage.length > 3) {
                     localStorage.setItem("user_phone", backup_localstorage)
                 } else {
                     localStorage.removeItem("user_phone")
                 }
             }
-        }, 5000)
+        }, 500)
 
         return () => clearInterval(interval)
-    }, [])
+    }, [backup_localstorage])
 
     // ✅ Run on page load — check localStorage
     useEffect(() => {
@@ -44,15 +42,54 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     // ✅ Run when userPhone is set from OTP
     useEffect(() => {
         if (userPhone && userPhone.length > 3) {
-            loginWithPhone(userPhone)
-
             const encryptedPhone = CryptoJS.AES.encrypt(userPhone, SECRET_KEY).toString()
-            localStorage.setItem("user_phone", encryptedPhone)
-
             //upddate backup
             setBackupLocalstorage(encryptedPhone)
+            localStorage.setItem("user_phone", encryptedPhone)
+
+            //store backup then login
+            loginWithPhone(userPhone)
+
         }
     }, [userPhone])
+
+    // Load default progress on first visit
+    useEffect(() => {
+        const alreadySet = localStorage.getItem("progress")
+        if (!alreadySet) {
+            const defaultProgress = {
+                listening: {
+                    "fill-in-the-blanks": { completed: 0, accuracy: null, streak: 0 },
+                    "highlight-correct-summary": { completed: 0, accuracy: null, streak: 0 },
+                    "highlight-incorrect-words": { completed: 0, accuracy: null, streak: 0 },
+                    "multiple-mcq": { completed: 0, accuracy: null, streak: 0 },
+                    "single-mcq": { completed: 0, accuracy: null, streak: 0 },
+                    "summarize-text-spoken": { completed: 0, accuracy: null, streak: 0 },
+                    "writing-from-dictation": { completed: 0, accuracy: null, streak: 0 }
+                },
+                reading: {
+                    "single-mcq": { completed: 0, accuracy: null, streak: 0 },
+                    "multiple-mcq": { completed: 0, accuracy: null, streak: 0 },
+                    "re-order": { completed: 0, accuracy: null, streak: 0 },
+                    "fill-in-the-blanks": { completed: 0, accuracy: null, streak: 0 },
+                    "reading-and-writing-fill-in-the-blanks": { completed: 0, accuracy: null, streak: 0 }
+                },
+                speaking: {
+                    "read-aloud": { completed: 0, accuracy: null, streak: 0 },
+                    "repeat-sentence": { completed: 0, accuracy: null, streak: 0 },
+                    "describe-image": { completed: 0, accuracy: null, streak: 0 },
+                    "retell-lecture": { completed: 0, accuracy: null, streak: 0 },
+                    "short-answer-questions": { completed: 0, accuracy: null, streak: 0 }
+                },
+                writing: {
+                    "essay-writing": { completed: 0, accuracy: null, streak: 0 },
+                    "summarize-text": { completed: 0, accuracy: null, streak: 0 }
+                }
+            }
+
+            localStorage.setItem("progress", JSON.stringify(defaultProgress))
+        }
+    }, [])
 
     return (
         <>

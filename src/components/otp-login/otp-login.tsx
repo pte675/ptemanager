@@ -553,7 +553,7 @@ export default function OtpLogin({ onSuccess }: { onSuccess: (phone: string) => 
                                         animate="animate"
                                         exit="exit"
                                     >
-                                        {step === "phone" ? "Secure Login" : "Verification Code"}
+                                        {step === "phone" ? "Sign in to PteGoGlobal" : "Verification Code"}
                                     </motion.h2>
 
                                     <motion.p

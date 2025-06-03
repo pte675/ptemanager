@@ -278,6 +278,38 @@ export default function SingleChoiceInterface() {
                 ? "✅ Correct! Well done."
                 : "❌ Incorrect. Try reviewing the audio again."
         )
+
+        // Update progress in localStorage
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+
+        const prevData = prevProgress?.listening?.["single-mcq"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isNewQuestion = SAMPLE_QUESTION.id > prevData.completed
+        const newCompleted = isNewQuestion ? SAMPLE_QUESTION.id : prevData.completed
+        const newStreak = isCorrect ? prevData.streak + 1 : 0
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCorrect ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCorrect ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const updatedProgress = {
+            ...prevProgress,
+            listening: {
+                ...prevProgress.listening,
+                "single-mcq": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
     }
 
     // Reset exercise
