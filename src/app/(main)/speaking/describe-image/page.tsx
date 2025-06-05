@@ -261,6 +261,41 @@ export default function DescribeImageInterface() {
 
     // Handle form submission
     const handleSubmit = async () => {
+        const updatelocalStorage = (result: { score: number }) => {
+            // Update local storage with progress
+            const isCurrentQuestionRight = result.score >= 4 // or adjust threshold as needed
+
+            const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+            const prevData = prevProgress?.speaking?.["describe-image"] || {
+                completed: 0,
+                accuracy: null,
+                streak: 0,
+            }
+
+            const isNewQuestion = question.id > prevData.completed
+            const newCompleted = isNewQuestion ? question.id : prevData.completed
+            const newStreak = isCurrentQuestionRight ? prevData.streak + 1 : 0
+            const newAccuracy = isNewQuestion
+                ? prevData.accuracy === null
+                    ? (isCurrentQuestionRight ? 1 : 0)
+                    : ((prevData.accuracy * prevData.completed) + (isCurrentQuestionRight ? 1 : 0)) / newCompleted
+                : prevData.accuracy
+
+            const updatedProgress = {
+                ...prevProgress,
+                speaking: {
+                    ...prevProgress.speaking,
+                    "describe-image": {
+                        completed: newCompleted,
+                        accuracy: parseFloat(newAccuracy.toFixed(2)),
+                        streak: newStreak,
+                    },
+                },
+            }
+
+            localStorage.setItem("progress", JSON.stringify(updatedProgress))
+        }
+
         if (!recordedAudio) {
             toast(
                 <div>
@@ -274,7 +309,6 @@ export default function DescribeImageInterface() {
         }
 
         setHasSubmitted(true)
-
         toast(
             <div>
                 <p className="font-semibold">Response Submitted</p>
@@ -334,6 +368,7 @@ export default function DescribeImageInterface() {
             const result = await res.json();
 
             setEvaluationResult(result);
+            updatelocalStorage(result)
 
             toast.success("Evaluation Complete", {
                 description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,

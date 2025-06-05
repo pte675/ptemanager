@@ -120,6 +120,41 @@ export default function QuizPage() {
         const questionScore = (correctAnswers / currentQuestion.blanks.length) * 100
         setScore((prev) => prev + questionScore)
         setIsSubmitted(true)
+
+
+        // Update localStorage with progress
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+        const prevData = prevProgress?.reading?.["reading-and-writing-fill-in-the-blanks"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isCurrentQuestionRight = questionScore === 100
+        const isNewQuestion = currentQuestion.id > prevData.completed
+
+        const newCompleted = isNewQuestion ? currentQuestion.id : prevData.completed
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCurrentQuestionRight ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCurrentQuestionRight ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const newStreak = isCurrentQuestionRight ? prevData.streak + 1 : 0
+
+        const updatedProgress = {
+            ...prevProgress,
+            reading: {
+                ...prevProgress.reading,
+                "reading-and-writing-fill-in-the-blanks": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
     }
 
     const handlePrevious = () => {

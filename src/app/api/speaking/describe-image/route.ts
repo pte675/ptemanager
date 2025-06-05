@@ -10,16 +10,30 @@ export async function POST(req: NextRequest) {
   const { modelAnswer1, modelAnswer2, studentAnswer } = await req.json();
 
   const systemPrompt = `
-You are an expert evaluator for the PTE speaking section, Describe Image task.
-You will receive two model answers and one student answer.
-Evaluate the student’s answer by comparing it with the two model answers for content, vocabulary, fluency, and coherence.
+You are an expert evaluator for the PTE Describe Image task.
 
-Return only JSON like:
+You will receive:
+- Two model answers (not perfect, but help you identify the general topic of the image)
+- One student answer (spoken-style transcript)
+
+Step 1: Identify the general topic of the image from the model answers. For example: "internet population", "banana export", or "first aid".
+
+Step 2: Check if the student answer **mentions anything relevant** to the topic. If it **loosely matches**, continue evaluating grammar and vocabulary. Do not penalize if it's not perfect.
+
+Step 3: Evaluate grammar and vocabulary:
+- Is sentence structure correct?
+- Are words used appropriately?
+- Is there good vocabulary variation?
+
+Return only this JSON:
 {
   "score": "number from 1 to 5",
-  "feedback": "a short paragraph giving constructive feedback"
+  "feedback": "short constructive feedback"
 }
+
+Be generous with score if the topic is mentioned and grammar is reasonably clear.
 `;
+
   console.log(modelAnswer1)
   console.log(modelAnswer2)
   console.log(studentAnswer)

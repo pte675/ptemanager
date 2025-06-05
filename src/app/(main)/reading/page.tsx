@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { BookOpen, Flame, CheckCircle, BarChart3, Clock, Award, ChevronRight, PlusCircle, Sparkles } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,13 +15,14 @@ import Link from "next/link"
 export default function PTEReadingDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
-    const dashboardData: {
+    const [dashboardData, setDashboardData] = useState<{
         score: number
         stats: {
             title: string
             value: string
             description: string
             icon: React.ReactNode
+            // trend: "up" | "down" | "same"
             trend: "up" | "down" | "same"
             trendValue: string
         }[]
@@ -32,84 +33,75 @@ export default function PTEReadingDashboard() {
             total: number
             streak: number
             accuracy: number
+            // color: "purple" | "indigo" | "fuchsia" | "violet" | "pink"
             color: "purple" | "indigo" | "fuchsia" | "violet" | "pink"
         }[]
-    } = {
-        score: 85,
-        stats: [
-            {
-                title: "Weekly Progress",
-                value: "87%",
-                description: "You've improved by 12% this week",
-                icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
-                trend: "up",
-                trendValue: "12%",
-            },
-            {
-                title: "Study Time",
-                value: "14.5h",
-                description: "Total time spent on reading exercises",
-                icon: <Clock className="h-5 w-5 text-blue-500" />,
-                trend: "up",
-                trendValue: "2.3h",
-            },
-            {
-                title: "Mastery Level",
-                value: "Advanced",
-                description: "Top 15% of all PTE students",
-                icon: <Award className="h-5 w-5 text-amber-500" />,
-                trend: "same",
-                trendValue: "",
-            },
-        ],
-        tasks: [
-            {
-                title: "MCQ - Single Answer",
-                path: "single-mcq",
-                completed: 176,
-                total: 200,
-                streak: 4,
-                accuracy: 88,
-                color: "purple",
-            },
-            {
-                title: "MCQ - Multiple Answers",
-                path: "multiple-mcq",
-                completed: 153,
-                total: 200,
-                streak: 4,
-                accuracy: 77,
-                color: "indigo",
-            },
-            {
-                title: "Re-order Paragraphs",
-                path: "re-order",
-                completed: 412,
-                total: 500,
-                streak: 85,
-                accuracy: 82,
-                color: "fuchsia",
-            },
-            {
-                title: "Fill in the Blanks",
-                path: "fill-in-the-blanks",
-                completed: 750,
-                total: 800,
-                streak: 164,
-                accuracy: 94,
-                color: "violet",
-            },
-            {
-                title: "Reading & Writing Fill in Blanks",
-                path: "reading-and-writing-fill-in-the-blanks",
-                completed: 513,
-                total: 600,
-                streak: 90,
-                accuracy: 85,
-                color: "pink",
-            },
-        ],
-    }
+    } | null>(null)
+
+    useEffect(() => {
+        const raw = localStorage.getItem("progress")
+        if (!raw) return
+
+        try {
+            const progress = JSON.parse(raw)
+            const reading = progress.reading || {}
+
+            const tasks = [
+                { title: "MCQ - Single Answer", path: "single-mcq", total: 200, color: "purple" },
+                { title: "MCQ - Multiple Answers", path: "multiple-mcq", total: 200, color: "indigo" },
+                { title: "Re-order Paragraphs", path: "re-order", total: 500, color: "fuchsia" },
+                { title: "Fill in the Blanks", path: "fill-in-the-blanks", total: 800, color: "violet" },
+                { title: "Reading & Writing Fill in Blanks", path: "reading-and-writing-fill-in-the-blanks", total: 600, color: "pink" },
+            ].map(task => {
+                const data = reading[task.path] || { completed: 0, accuracy: 0, streak: 0 }
+                return {
+                    ...task,
+                    completed: data.completed,
+                    accuracy: data.accuracy ?? 0,
+                    streak: data.streak ?? 0,
+                    color: task.color as "purple" | "indigo" | "fuchsia" | "violet" | "pink"
+                }
+            })
+
+            const score = tasks.length
+                ? Math.round(tasks.reduce((acc, task) => acc + (task.accuracy || 0), 0) / tasks.length)
+                : 0
+
+            const stats = [
+                {
+                    title: "Weekly Progress",
+                    value: `${score}%`,
+                    description: "Based on recent activity",
+                    icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+                {
+                    title: "Study Time",
+                    value: "—",
+                    description: "Time tracking not implemented",
+                    icon: <Clock className="h-5 w-5 text-blue-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+                {
+                    title: "Mastery Level",
+                    value: score >= 85 ? "Advanced" : score >= 60 ? "Intermediate" : "Beginner",
+                    description: "Compared to top PTE students",
+                    icon: <Award className="h-5 w-5 text-amber-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+            ]
+
+            setDashboardData({ score, stats, tasks })
+        } catch (err) {
+            console.error("Failed to load reading progress from localStorage", err)
+        }
+    }, [])
+
+    if (!dashboardData) return null
+
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -337,7 +329,7 @@ function QuestionTypeCard({
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex justify-between items-center">
                         {title}
-                        <span className={`text-2xl font-bold ${colorMap[color]?.split(" ")[1]}`}>{completed}</span>
+                        <span className={`text-2xl font-bold ${colorMap[color]?.split(" ")[1]}`}>{completed}/{total}</span>
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="pb-2">

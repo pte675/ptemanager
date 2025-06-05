@@ -435,6 +435,39 @@ export default function RepeatSentenceInterface() {
         const result = evaluateResponse(data_text.text, SAMPLE_TASK.sentence)
         setEvaluationResult(result)
 
+        // ✅ progress tracking logic for localStorage
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+        const prevData = prevProgress?.speaking?.["repeat-sentence"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isCurrentQuestionRight = result.score === "5" || result.score === "4"
+        const isNewQuestion = rawQuestions[currentIndex].id > prevData.completed
+
+        const newCompleted = isNewQuestion ? rawQuestions[currentIndex].id : prevData.completed
+        const newStreak = isCurrentQuestionRight ? prevData.streak + 1 : 0
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCurrentQuestionRight ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCurrentQuestionRight ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const updatedProgress = {
+            ...prevProgress,
+            speaking: {
+                ...prevProgress.speaking,
+                "repeat-sentence": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
+
     }
 
     // Reset exercise

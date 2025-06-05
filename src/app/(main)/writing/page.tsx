@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
     BookOpen, Flame, CheckCircle, BarChart3, Clock, Award,
     ChevronRight, PlusCircle, Sparkles
@@ -16,7 +16,7 @@ import Link from "next/link"
 export default function PTEWritingDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
-    const dashboardData: {
+    const [dashboardData, setDashboardData] = useState<{
         score: number
         stats: {
             title: string
@@ -35,55 +35,68 @@ export default function PTEWritingDashboard() {
             accuracy: number
             color: "orange" | "amber"
         }[]
-    } = {
-        score: 81,
-        stats: [
-            {
-                title: "Writing Progress",
-                value: "81%",
-                description: "Improved by 6% this week",
-                icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
-                trend: "up",
-                trendValue: "6%",
-            },
-            {
-                title: "Writing Time",
-                value: "8.4h",
-                description: "Time spent on writing tasks",
-                icon: <Clock className="h-5 w-5 text-blue-500" />,
-                trend: "up",
-                trendValue: "1.1h",
-            },
-            {
-                title: "Writing Level",
-                value: "Advanced",
-                description: "Top 20% among peers",
-                icon: <Award className="h-5 w-5 text-amber-500" />,
-                trend: "same",
-                trendValue: "",
-            },
-        ],
-        tasks: [
-            {
-                title: "Essay Writing",
-                path: "essay-writing",
-                completed: 78,
-                total: 100,
-                streak: 6,
-                accuracy: 88,
-                color: "orange",
-            },
-            {
-                title: "Summarize Written Text",
-                path: "summarize-text",
-                completed: 92,
-                total: 100,
-                streak: 8,
-                accuracy: 91,
-                color: "amber",
-            },
-        ],
-    }
+    } | null>(null)
+
+    useEffect(() => {
+        const raw = localStorage.getItem("progress")
+        if (!raw) return
+
+        try {
+            const progress = JSON.parse(raw)
+            const writing = progress.writing || {}
+
+            const tasks = [
+                { title: "Essay Writing", path: "essay-writing", total: 100, color: "orange" },
+                { title: "Summarize Written Text", path: "summarize-text", total: 100, color: "amber" },
+            ].map(task => {
+                const data = writing[task.path] || { completed: 0, accuracy: 0, streak: 0 }
+                return {
+                    ...task,
+                    completed: data.completed as number,
+                    accuracy: data.accuracy ?? 0,
+                    streak: data.streak ?? 0,
+                    color: task.color as "orange" | "amber"
+                }
+            })
+
+            const score = tasks.length
+                ? Math.round(tasks.reduce((acc, task) => acc + (task.accuracy || 0), 0) / tasks.length)
+                : 0
+
+            const stats = [
+                {
+                    title: "Writing Progress",
+                    value: `${score}%`,
+                    description: "Based on recent activity",
+                    icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+                {
+                    title: "Writing Time",
+                    value: "—",
+                    description: "Time tracking not implemented",
+                    icon: <Clock className="h-5 w-5 text-blue-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+                {
+                    title: "Writing Level",
+                    value: score >= 85 ? "Advanced" : score >= 60 ? "Intermediate" : "Beginner",
+                    description: "Compared to top PTE students",
+                    icon: <Award className="h-5 w-5 text-amber-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+            ]
+
+            setDashboardData({ score, stats, tasks })
+        } catch (err) {
+            console.error("Failed to load writing progress from localStorage", err)
+        }
+    }, [])
+
+    if (!dashboardData) return null
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white dark:from-slate-950 dark:to-slate-900">

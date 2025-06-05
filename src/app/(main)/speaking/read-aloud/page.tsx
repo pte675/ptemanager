@@ -349,6 +349,39 @@ export default function ReadAloudInterface() {
 
         const result = evaluateSpeakingResponse(SAMPLE_TASK.text, data_text.text);
         setEvaluationResult(result);
+
+        // Update progress to localStorage
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+        const prevData = prevProgress?.speaking?.["read-aloud"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isCurrentQuestionRight = result.score === "5" || result.score === "4"
+        const isNewQuestion = SAMPLE_TASK.id > prevData.completed
+
+        const newCompleted = isNewQuestion ? SAMPLE_TASK.id : prevData.completed
+        const newStreak = isCurrentQuestionRight ? prevData.streak + 1 : 0
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCurrentQuestionRight ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCurrentQuestionRight ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const updatedProgress = {
+            ...prevProgress,
+            speaking: {
+                ...prevProgress.speaking,
+                "read-aloud": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
     }
 
     // Reset exercise

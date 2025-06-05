@@ -109,6 +109,43 @@ export default function TextSummarizationInterface() {
     }
 
     const handleSubmit = async () => {
+        //update local storage with progress
+        const updateLocalStorage = (score: number) => {
+            const isCorrect = score >= 4
+            const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}");
+
+            const prevData = prevProgress?.writing?.["summarize-text"] || {
+                completed: 0,
+                accuracy: null,
+                streak: 0,
+            };
+
+            const isNew = currentPassage.id > prevData.completed;
+            const newCompleted = isNew ? currentPassage.id : prevData.completed;
+            const newStreak = isCorrect ? prevData.streak + 1 : 0;
+            const newAccuracy = isNew
+                ? prevData.accuracy === null
+                    ? (isCorrect ? 1 : 0)
+                    : ((prevData.accuracy * prevData.completed) + (isCorrect ? 1 : 0)) / newCompleted
+                : prevData.accuracy;
+
+            const updatedProgress = {
+                ...prevProgress,
+                writing: {
+                    ...prevProgress.writing,
+                    "summarize-text": {
+                        completed: newCompleted,
+                        accuracy: parseFloat(newAccuracy.toFixed(2)),
+                        streak: newStreak,
+                    },
+                },
+            };
+
+            localStorage.setItem("progress", JSON.stringify(updatedProgress));
+        };
+
+
+        //rest logic to calculate score
         if (sentenceCount !== 1) {
             toast.error("Warning: Your summary should be exactly one sentence. Please revise before submitting.");
             return;
@@ -132,6 +169,7 @@ export default function TextSummarizationInterface() {
             const result = await res.json();
 
             setEvaluationResult(result);
+            updateLocalStorage(parseInt(result.score || "0"));
 
             toast.success("Evaluation Complete", {
                 description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,

@@ -103,6 +103,42 @@ export default function EssayWritingInterface() {
     }
 
     const handleSubmit = async () => {
+        //update the local storage with the essay progress
+        const updateLocalStorage = (score: number) => {
+            const isCorrect = score >= 4
+            const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+
+            const prevData = prevProgress?.writing?.["essay-writing"] || {
+                completed: 0,
+                accuracy: null,
+                streak: 0,
+            }
+
+            const isNewEssay = currentEssay.id > prevData.completed
+            const newCompleted = isNewEssay ? currentEssay.id : prevData.completed
+            const newStreak = isCorrect ? prevData.streak + 1 : 0
+            const newAccuracy = isNewEssay
+                ? prevData.accuracy === null
+                    ? (isCorrect ? 1 : 0)
+                    : ((prevData.accuracy * prevData.completed) + (isCorrect ? 1 : 0)) / newCompleted
+                : prevData.accuracy
+
+            const updatedProgress = {
+                ...prevProgress,
+                writing: {
+                    ...prevProgress.writing,
+                    "essay-writing": {
+                        completed: newCompleted,
+                        accuracy: parseFloat(newAccuracy.toFixed(2)),
+                        streak: newStreak,
+                    },
+                },
+            }
+
+            localStorage.setItem("progress", JSON.stringify(updatedProgress))
+        }
+
+        //rest logic to handle submit
         toast.success(`Your ${wordCount} word essay has been submitted successfully.`)
         setIsTimerRunning(false)
 
@@ -121,10 +157,12 @@ export default function EssayWritingInterface() {
             const result = await res.json();
 
             setEvaluationResult(result);
+            updateLocalStorage(parseInt(result.score || "0"))
 
             toast.success("Evaluation Complete", {
                 description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,
             });
+
         } catch (err: any) {
             toast.error("Evaluation failed. Please try again later.", {
                 description: err.message || "Unexpected error",
@@ -154,6 +192,7 @@ export default function EssayWritingInterface() {
     }
 
     const resetEssay = () => {
+        setEvaluationResult(null)
         setEssayContent("")
         setTimeRemaining(20 * 60)
         setIsTimerRunning(true)

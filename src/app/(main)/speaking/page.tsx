@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { BookOpen, Flame, CheckCircle, BarChart3, Clock, Award, ChevronRight, PlusCircle, Sparkles } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,7 @@ import Link from "next/link"
 export default function PTESpeakingDashboard() {
     const [activeTab, setActiveTab] = useState("overview")
 
-    const dashboardData: {
+    const [dashboardData, setDashboardData] = useState<{
         overallScore: number
         stats: {
             title: string
@@ -34,82 +34,75 @@ export default function PTESpeakingDashboard() {
             accuracy: number
             color: "purple" | "indigo" | "fuchsia" | "violet" | "pink"
         }[]
-    } = {
-        overallScore: 78,
-        stats: [
-            {
-                title: "Speaking Progress",
-                value: "78%",
-                description: "Improved by 8% this week",
-                icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
-                trend: "up",
-                trendValue: "8%",
-            },
-            {
-                title: "Practice Time",
-                value: "10.2h",
-                description: "Total time spent on speaking tasks",
-                icon: <Clock className="h-5 w-5 text-blue-500" />,
-                trend: "up",
-                trendValue: "1.5h",
-            },
-            {
-                title: "Confidence Level",
-                value: "Good",
-                description: "Better than 65% of learners",
-                icon: <Award className="h-5 w-5 text-amber-500" />,
-                trend: "same",
-                trendValue: "",
-            },
-        ],
-        tasks: [
-            {
-                title: "Read Aloud",
-                path: "read-aloud",
-                completed: 150,
-                total: 200,
-                streak: 5,
-                accuracy: 86,
-                color: "purple",
-            },
-            {
-                title: "Repeat Sentence",
-                path: "repeat-sentence",
-                completed: 180,
-                total: 200,
-                streak: 9,
-                accuracy: 91,
-                color: "indigo",
-            },
-            {
-                title: "Describe Image",
-                path: "describe-image",
-                completed: 132,
-                total: 150,
-                streak: 6,
-                accuracy: 77,
-                color: "fuchsia",
-            },
-            {
-                title: "Retell Lecture",
-                path: "retell-lecture",
-                completed: 98,
-                total: 120,
-                streak: 4,
-                accuracy: 83,
-                color: "violet",
-            },
-            {
-                title: "Short Answer Questions",
-                path: "short-answer-questions",
-                completed: 190,
-                total: 200,
-                streak: 10,
-                accuracy: 95,
-                color: "pink",
-            },
-        ],
-    }
+    } | null>(null)
+
+    useEffect(() => {
+        const raw = localStorage.getItem("progress")
+        if (!raw) return
+
+        try {
+            const progress = JSON.parse(raw)
+            const speaking = progress.speaking || {}
+
+            const tasks = [
+                { title: "Read Aloud", path: "read-aloud", total: 200, color: "purple" },
+                { title: "Repeat Sentence", path: "repeat-sentence", total: 200, color: "indigo" },
+                { title: "Describe Image", path: "describe-image", total: 150, color: "fuchsia" },
+                { title: "Retell Lecture", path: "retell-lecture", total: 120, color: "violet" },
+                { title: "Short Answer Questions", path: "short-answer-questions", total: 200, color: "pink" },
+            ].map(task => {
+                const data = speaking[task.path] || { completed: 0, accuracy: 0, streak: 0 }
+                return {
+                    ...task,
+                    completed: data.completed as number,
+                    accuracy: data.accuracy ?? 0,
+                    streak: data.streak ?? 0,
+                    color: task.color as "purple" | "indigo" | "fuchsia" | "violet" | "pink"
+                }
+            })
+
+            const score = tasks.length
+                ? Math.round(tasks.reduce((acc, task) => acc + (task.accuracy || 0), 0) / tasks.length)
+                : 0
+
+            const stats = [
+                {
+                    title: "Speaking Progress",
+                    value: `${score}%`,
+                    description: "Based on recent activity",
+                    icon: <BarChart3 className="h-5 w-5 text-emerald-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+                {
+                    title: "Practice Time",
+                    value: "—",
+                    description: "Time tracking not implemented",
+                    icon: <Clock className="h-5 w-5 text-blue-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+                {
+                    title: "Confidence Level",
+                    value: score >= 85 ? "Excellent" : score >= 60 ? "Good" : "Needs Work",
+                    description: "Compared to other learners",
+                    icon: <Award className="h-5 w-5 text-amber-500" />,
+                    trend: "same" as const,
+                    trendValue: "",
+                },
+            ]
+
+            setDashboardData({
+                overallScore: score,
+                stats,
+                tasks
+            })
+        } catch (err) {
+            console.error("Failed to load speaking progress from localStorage", err)
+        }
+    }, [])
+
+    if (!dashboardData) return null
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white dark:from-slate-950 dark:to-slate-900">

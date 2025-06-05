@@ -156,6 +156,40 @@ export default function MultiSelectQuiz() {
             ...prev,
             [currentQuestion.id]: selectedAnswers,
         }))
+
+        //update localStorage on submit
+        const isCurrentQuestionRight = questionScore === 100
+
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+        const prevData = prevProgress?.reading?.["multiple-mcq"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        }
+
+        const isNewQuestion = currentQuestion.id > prevData.completed
+        const newCompleted = isNewQuestion ? currentQuestion.id : prevData.completed
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isCurrentQuestionRight ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isCurrentQuestionRight ? 1 : 0)) / newCompleted
+            : prevData.accuracy
+
+        const newStreak = isCurrentQuestionRight ? prevData.streak + 1 : 0
+
+        const updatedProgress = {
+            ...prevProgress,
+            reading: {
+                ...prevProgress.reading,
+                "multiple-mcq": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        }
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress))
     }
 
     const handleNext = () => {

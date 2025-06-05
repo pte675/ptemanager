@@ -66,6 +66,45 @@ export default function ReorderParaDndKit() {
         setShowAnswer(false);
     }, [currentIndex]);
 
+    // Update localStorage with progress after submission
+    useEffect(() => {
+        if (!submitted) return;
+
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}");
+
+        const prevData = prevProgress?.reading?.["re-order"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        };
+
+        const isNewQuestion = data[currentIndex].id > prevData.completed;
+        const isAnswerCorrect = isCorrect;
+
+        const newCompleted = isNewQuestion ? data[currentIndex].id : prevData.completed;
+        const newStreak = isAnswerCorrect ? prevData.streak + 1 : 0;
+
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isAnswerCorrect ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isAnswerCorrect ? 1 : 0)) / newCompleted
+            : prevData.accuracy;
+
+        const updatedProgress = {
+            ...prevProgress,
+            reading: {
+                ...prevProgress.reading,
+                "re-order": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        };
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress));
+    }, [submitted]);
+
     const handleDragEnd = (event: any) => {
         const { active, over } = event;
         if (!over || active.id === over.id) return;

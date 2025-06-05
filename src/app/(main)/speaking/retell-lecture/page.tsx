@@ -368,6 +368,42 @@ export default function RetellLectureInterface() {
 
     // Handle form submission
     const handleSubmit = async () => {
+
+        const updatelocalStorage = (result: { score: number }) => {
+            // Update local storage with progress
+            const isCurrentQuestionRight = result.score >= 4 // or adjust threshold as needed
+
+            const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}")
+            const prevData = prevProgress?.speaking?.["retell-lecture"] || {
+                completed: 0,
+                accuracy: null,
+                streak: 0,
+            }
+
+            const isNewQuestion = currentRaw.id > prevData.completed
+            const newCompleted = isNewQuestion ? currentRaw.id : prevData.completed
+            const newStreak = isCurrentQuestionRight ? prevData.streak + 1 : 0
+            const newAccuracy = isNewQuestion
+                ? prevData.accuracy === null
+                    ? (isCurrentQuestionRight ? 1 : 0)
+                    : ((prevData.accuracy * prevData.completed) + (isCurrentQuestionRight ? 1 : 0)) / newCompleted
+                : prevData.accuracy
+
+            const updatedProgress = {
+                ...prevProgress,
+                speaking: {
+                    ...prevProgress.speaking,
+                    "retell-lecture": {
+                        completed: newCompleted,
+                        accuracy: parseFloat(newAccuracy.toFixed(2)),
+                        streak: newStreak,
+                    },
+                },
+            }
+
+            localStorage.setItem("progress", JSON.stringify(updatedProgress))
+        }
+
         if (!recordedAudio) {
             toast.error("No recording found", {
                 description: "Please complete the recording before submitting.",
@@ -433,6 +469,7 @@ export default function RetellLectureInterface() {
             const result = await res.json();
 
             setEvaluationResult(result);
+            updatelocalStorage(result);
 
             toast.success("Evaluation Complete", {
                 description: `Score: ${result.score || "N/A"} - ${result.feedback || "No feedback"}`,

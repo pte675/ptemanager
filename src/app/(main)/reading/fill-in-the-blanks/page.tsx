@@ -58,6 +58,45 @@ export default function FillInTheBlanks() {
         setSubmitted(false);
     }, [currentIndex]);
 
+    // Update progress in localStorage when submitted
+    useEffect(() => {
+        if (!submitted) return;
+
+        const prevProgress = JSON.parse(localStorage.getItem("progress") || "{}");
+
+        const prevData = prevProgress?.reading?.["fill-in-the-blanks"] || {
+            completed: 0,
+            accuracy: null,
+            streak: 0,
+        };
+
+        const isNewQuestion = questions[currentIndex].id > prevData.completed;
+        const isAnswerCorrect = isCorrect;
+
+        const newCompleted = isNewQuestion ? questions[currentIndex].id : prevData.completed;
+        const newStreak = isAnswerCorrect ? prevData.streak + 1 : 0;
+
+        const newAccuracy = isNewQuestion
+            ? prevData.accuracy === null
+                ? (isAnswerCorrect ? 1 : 0)
+                : ((prevData.accuracy * prevData.completed) + (isAnswerCorrect ? 1 : 0)) / newCompleted
+            : prevData.accuracy;
+
+        const updatedProgress = {
+            ...prevProgress,
+            reading: {
+                ...prevProgress.reading,
+                "fill-in-the-blanks": {
+                    completed: newCompleted,
+                    accuracy: parseFloat(newAccuracy.toFixed(2)),
+                    streak: newStreak,
+                },
+            },
+        };
+
+        localStorage.setItem("progress", JSON.stringify(updatedProgress));
+    }, [submitted]);
+
     const handleDragStart = (event: DragStartEvent) => {
         setActiveId(event.active.id.toString());
     };
