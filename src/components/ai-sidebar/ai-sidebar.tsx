@@ -51,21 +51,21 @@ interface QuickAction {
 }
 
 const quickActions: QuickAction[] = [
-    { icon: <Target className="w-4 h-4" />, label: "Practice Questions", action: "practice", color: "bg-blue-500" },
-    { icon: <Brain className="w-4 h-4" />, label: "Study Tips", action: "tips", color: "bg-purple-500" },
-    { icon: <TrendingUp className="w-4 h-4" />, label: "Progress Review", action: "progress", color: "bg-green-500" },
-    { icon: <BookOpen className="w-4 h-4" />, label: "Mock Test", action: "test", color: "bg-orange-500" },
+    { icon: <Target className="w-4 h-4" />, label: "Help Me Understand", action: "assist", color: "bg-blue-500" },
+    { icon: <Brain className="w-4 h-4" />, label: "Give Me Hints", action: "hint", color: "bg-purple-500" },
+    { icon: <TrendingUp className="w-4 h-4" />, label: "Explain My Mistake", action: "explain", color: "bg-green-500" },
+    { icon: <BookOpen className="w-4 h-4" />, label: "Teach Me", action: "teach", color: "bg-orange-500" },
 ]
 
 const suggestionChips = [
     "Explain this concept",
-    "Generate practice questions",
-    "Check my pronunciation",
-    "Review my mistakes",
-    "Get study tips",
-    "Start mock test",
-    "Analyze my progress",
-    "Common question patterns",
+    "Give me a hint",
+    "Review my answer",
+    "Suggest improvements",
+    "Show similar questions",
+    "Teach me this topic",
+    "Summarize the question",
+    "How can I do better?",
 ]
 
 
@@ -255,6 +255,29 @@ export default function AIChatSidebar({
     const formatTime = (date: Date) => {
         if (typeof window === "undefined") return "" // avoid SSR mismatch
         return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    }
+
+    const handleExport = () => {
+        if (!messages || messages.length === 0) {
+            alert("No messages to export.")
+            return
+        }
+
+        const formatted = messages.map((msg) => {
+            const prefix = msg.type === "user" ? "You" : "AI"
+            return `${prefix}: ${msg.content}`
+        }).join("\n\n")
+
+        const blob = new Blob([formatted], { type: "text/plain" })
+        const url = URL.createObjectURL(blob)
+
+        const link = document.createElement("a")
+        link.href = url
+        link.download = "chat-export.txt"
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
     }
 
     if (!isExpanded) {
@@ -544,13 +567,13 @@ export default function AIChatSidebar({
             {/* Input Area */}
             <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                 <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    {/* <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <Paperclip className="w-4 h-4" />
-                    </Button>
+                    </Button> */}
                     <div className="flex-1 relative">
                         <Input
                             ref={inputRef}
-                            placeholder="Ask me anything about PTE..."
+                            placeholder="Ask anything about this question..."
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyPress={(e) => e.key === "Enter" && handleSendMessage(inputValue)}
@@ -577,10 +600,20 @@ export default function AIChatSidebar({
                 <div className="flex items-center justify-between mt-2 text-xs text-gray-500 dark:text-gray-400">
                     <span>Press Enter to send</span>
                     <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm" className="h-4 text-xs p-0">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 text-xs p-0"
+                            onClick={() => setInputValue("")}
+                        >
                             Clear chat
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-4 text-xs p-0">
+                        <Button
+                            onClick={handleExport}
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 text-xs p-0"
+                        >
                             Export
                         </Button>
                     </div>
