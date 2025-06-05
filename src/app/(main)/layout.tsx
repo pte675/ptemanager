@@ -2,17 +2,19 @@
 
 import { use, useEffect, useState } from "react"
 import OtpLogin from "@/components/otp-login/otp-login"
-import { loginWithPhone } from "@/lib/superbase/login"
+import { loginWithPhone, updateCompressedData } from "@/lib/superbase/login"
 import CryptoJS from 'crypto-js'
+import { inflate, deflate } from 'pako';
+import { toast } from "sonner"
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [isLoggedIn, setIsLoggedIn] = useState(true)
     const [userPhone, setUserPhone] = useState<string | null>(null)
     const [backup_localstorage, setBackupLocalstorage] = useState<string | null>(null)
 
     const SECRET_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY!
 
-    // Revert back if user change localStorage manually
+    // Revert back if user change localStorage manually for `user_phone`
     useEffect(() => {
         const interval = setInterval(() => {
             const current = localStorage.getItem("user_phone")
@@ -28,7 +30,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         return () => clearInterval(interval)
     }, [backup_localstorage])
 
-    // ✅ Run on page load — check localStorage
+    // ✅ Run on page load — check localStorage - check if user is logged in already on same device
     useEffect(() => {
         const stored = localStorage.getItem("user_phone")
         if (stored && stored.length > 3) {
@@ -36,20 +38,57 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
             // store backup for reverting back manual changes
             setBackupLocalstorage(stored)
+        } else {
+            setIsLoggedIn(false)
         }
     }, [])
 
-    // ✅ Run when userPhone is set from OTP
+    // ✅ Run when userPhone is set from OTP - handle new login or returning user
     useEffect(() => {
         if (userPhone && userPhone.length > 3) {
+            // Encrypt phone number before storing in localStorage
             const encryptedPhone = CryptoJS.AES.encrypt(userPhone, SECRET_KEY).toString()
-            //upddate backup
+
+            //upddate user_phone backup to check for manual localstorage changes
             setBackupLocalstorage(encryptedPhone)
             localStorage.setItem("user_phone", encryptedPhone)
 
             //store backup then login
-            loginWithPhone(userPhone)
+            //async login and data handling
+            const handleLogin = async () => {
+                try {
+                    const result = await loginWithPhone(userPhone);
+                    if (!result.success) {
+                        //phone not found or error
+                        console.error("Login failed");
+                    } else if (result.dataCompressed) {
+                        //existing user with compressed data (for practice questions) - decompress and store in localStorage
+                        console.log("Returning user. Compressed data:", result.dataCompressed);
+                        try {
+                            const binaryData = new Uint8Array(
+                                atob(result.dataCompressed)
+                                    .split("")
+                                    .map((c) => c.charCodeAt(0))
+                            );
 
+                            const decompressed = inflate(binaryData, { to: "string" });
+                            localStorage.setItem("progress", decompressed); // ✅ restore progress
+                            console.log("Restored progress from DB:", JSON.parse(decompressed));
+                        } catch (err) {
+                            console.error("Decompression failed:", err);
+                        }
+
+                    } else {
+                        //no data_compressed means new user
+                        console.log("New user. No compressed data yet.");
+                    }
+                } catch (err) {
+                    //superbase error
+                    console.error("Unexpected login error:", err);
+                }
+            };
+
+            void handleLogin();
         }
     }, [userPhone])
 
@@ -90,6 +129,48 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             localStorage.setItem("progress", JSON.stringify(defaultProgress))
         }
     }, [])
+
+    // ✅ Run every 3 minutes to check for progress changes and update Supabase
+    useEffect(() => {
+        let previousProgress = localStorage.getItem("progress");
+        const encryptedPhone = localStorage.getItem("user_phone");
+
+        if (!encryptedPhone || encryptedPhone.length < 3) return;
+
+        const decryptedPhone = CryptoJS.AES.decrypt(encryptedPhone, SECRET_KEY).toString(CryptoJS.enc.Utf8);
+
+        const interval = setInterval(async () => {
+            const current = localStorage.getItem("progress");
+
+            if (current && current !== previousProgress) {
+                try {
+                    // parse and compare
+                    const parsed = JSON.parse(current);
+                    // console.log("📌 Progress changed:", parsed);
+
+                    // compress
+                    const compressed = deflate(current);
+                    const base64 = btoa(String.fromCharCode(...compressed));
+
+                    // update Supabase
+                    const result = await updateCompressedData(decryptedPhone, base64);
+                    if (result.success) {
+                        // console.log("✅ Supabase updated with new progress.");
+                        toast.success("Progress saved successfully", {
+                            description: "Next save is in 3 mins",
+                        });
+                        previousProgress = current; // update reference
+                    } else {
+                        console.warn("⚠️ Failed to update Supabase.");
+                    }
+                } catch (err) {
+                    console.error("Failed to process updated progress:", err);
+                }
+            }
+        }, 180000); // every 3 minutes
+
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <>

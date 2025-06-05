@@ -50,19 +50,23 @@ export default function OtpLogin({ onSuccess }: { onSuccess: (phone: string) => 
 
     const [generatedOtp, setGeneratedOtp] = useState("")
 
-    //automatically get country code for phone number
+    const fetchedCountryCodeOnce = useRef(false);
+
+    // Automatically get country code for phone number
     useEffect(() => {
+        if (fetchedCountryCodeOnce.current) return;
+        fetchedCountryCodeOnce.current = true;
+
         const fetchCountryCode = async () => {
             try {
-                const res = await fetch("https://ipapi.co/json/");
+                const res = await fetch("https://ipwho.is/");
                 const data = await res.json();
-                const phoneCode = data.country_calling_code; // e.g. "+91"
-                console.log(phoneCode)
-
-                setCountryCode(phoneCode || "+1"); // fallback to +1 if not found
+                const phoneCode = data.calling_code ? `+${data.calling_code}` : "+1";
+                // console.log("Detected phone code:", phoneCode);
+                setCountryCode(phoneCode);
             } catch (error) {
                 console.error("Country auto-detection failed:", error);
-                setCountryCode("+1"); // fallback
+                setCountryCode("+1");
             }
         };
 

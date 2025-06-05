@@ -117,19 +117,19 @@ export default function PTEListeningDashboard() {
                         </div>
                         <div className="flex items-center gap-3">
                             <OverallScoreCard score={dashboardData.score} />
-                            <Button className="hidden md:flex gap-2 bg-sky-600 hover:bg-sky-700">
+                            {/* <Button className="hidden md:flex gap-2 bg-sky-600 hover:bg-sky-700">
                                 <PlusCircle className="h-4 w-4" />
                                 New Practice
-                            </Button>
+                            </Button> */}
                         </div>
                     </div>
                 </header>
 
                 <Tabs defaultValue="overview" className="mb-8" onValueChange={setActiveTab}>
-                    <TabsList className="grid grid-cols-3 w-full max-w-md mb-6">
+                    <TabsList className="grid grid-cols-1 w-full max-w-md mb-6">
                         <TabsTrigger value="overview">Overview</TabsTrigger>
-                        <TabsTrigger value="practice">Practice</TabsTrigger>
-                        <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                        {/* <TabsTrigger value="practice">Practice</TabsTrigger> */}
+                        {/* <TabsTrigger value="analytics">Analytics</TabsTrigger> */}
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-6">
