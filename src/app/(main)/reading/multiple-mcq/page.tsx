@@ -32,30 +32,31 @@ interface Question {
 
 // Sample questions for demo
 const sampleQuestions: Question[] = rawQuestions.map((q: any) => {
-    // Extract question + options
-    const [questionText, ...optionParts] = q.question.split(/\na\)|\nb\)|\nc\)|\nd\)|\ne\)/).map((t: string) => t.trim())
-    const optionsRaw = q.question.match(/\na\)(.*?)\nb\)(.*?)\nc\)(.*?)\nd\)(.*?)\ne\)(.*)/s)
+    // Extract question text and options using regex
+    const optionPattern = /([a-z])\)\s+(.*?)(?=(?:\n[a-z]\)\s)|$)/gis
+    const matches = [...q.question.matchAll(optionPattern)]
 
-    // Extract correct answer keys from the answer string
-    const correctAnswers = [...q.answer.matchAll(/([a-e])\)/gi)].map(match => match[1].toLowerCase())
+    // Extract the question text before the first "a)"
+    const questionText = q.question.split(/\na\)/i)[0].trim()
+
+    const options = matches.map(match => ({
+        id: match[1].toLowerCase(),
+        text: match[2].trim()
+    }))
+
+    const correctAnswers = [...q.answer.matchAll(/([a-z])\)/gi)].map(match => match[1].toLowerCase())
+
     return {
         id: q.id,
         category: q.title || "General",
         text: questionText,
         context: q.content || "",
-        options: [
-            { id: "a", text: optionsRaw?.[1]?.trim() || "" },
-            { id: "b", text: optionsRaw?.[2]?.trim() || "" },
-            { id: "c", text: optionsRaw?.[3]?.trim() || "" },
-            { id: "d", text: optionsRaw?.[4]?.trim() || "" },
-            { id: "e", text: optionsRaw?.[5]?.trim() || "" }
-        ],
+        options,
         correctAnswers,
         explanation: q.explanation || "",
-        minRequired: 2 // default value, or you can derive from question type
+        minRequired: 2 // or dynamically set: Math.min(2, correctAnswers.length)
     }
 })
-
 const showTimer = true
 const timePerQuestion = 240
 
