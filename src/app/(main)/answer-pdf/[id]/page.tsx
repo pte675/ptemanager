@@ -34,6 +34,21 @@ const pdfGroups = {
             title: "PTE Reading 6 – Answer PDF",
             url: "https://www.dropbox.com/scl/fi/p0eyhh4ifseaadf8o0nsn/PTE-READING-6-ANSWERS.pdf?rlkey=56i2yvqdk9i2nmjzq8c2fdtrp&st=j2uam6uq&raw=1",
         },
+        {
+            id: "reading-7",
+            title: "PTE Reading 7 – Answer PDF",
+            url: "https://www.dropbox.com/scl/fi/lzw73c1ynkxi76ncapcfa/PTE-READING-7-ANSWERS.pdf?rlkey=3kq3pk7idqdu19r0aubstdhrz&st=t958nev6&dl=0",
+        },
+        {
+            id: "reading-8",
+            title: "PTE Reading 8 – Answer PDF",
+            url: "https://www.dropbox.com/scl/fi/kxxijhrkr8xeiycbpwfzk/PTE-READING-8-ANSWERS.pdf?rlkey=w6ljmkszgegez6f7so3ly4kt9&st=7o5b441o&dl=0",
+        },
+        {
+            id: "reading-9",
+            title: "PTE Reading 9 – Answer PDF",
+            url: "https://www.dropbox.com/scl/fi/cm7xfamphp35bktqq1x3l/PTE-READING-9-ANSWERS.pdf?rlkey=asaszubuae48mgiko22pm0cum&st=nxaejafa&dl=0",
+        },
         // ... add up to 20
     ],
     // listening: [

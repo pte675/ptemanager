@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     },
     body: JSON.stringify({
       to,
-      body: `Your OTP is ${generatedOtp}`,
+      body: `${generatedOtp} is your one-time password (OTP) for ptegoglobal.com.`,
     }),
   });
 
