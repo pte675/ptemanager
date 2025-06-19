@@ -67,6 +67,31 @@ const pdfGroups = {
             title: "PTE Listening 3 – Answer PDF",
             url: "https://www.dropbox.com/scl/fi/svdmr0gyybla2uewtrpwr/Listening-3-Ans.pdf?rlkey=ajpzm2pbk5z677hyacdke533j&st=wsa3dn03&raw=1",
         },
+        {
+            id: "listening-4",
+            title: "PTE Listening 4 – Answer PDF",
+            url: "https://www.dropbox.com/scl/fi/r6o3mftc0usbihtid6agr/Listening-4-Ans.pdf?rlkey=zgqq1dm92calslayod9l48y6v&st=f5w7jvzd&raw=1",
+        },
+        {
+            id: "listening-5",
+            title: "PTE Listening 5 – Answer PDF",
+            url: "https://www.dropbox.com/scl/fi/x74jziz0n3e7qbvwttosg/Listening-5-Ans.pdf?rlkey=mff941k1xgu9qxfift98wxxi5&st=r3m7khtw&raw=1",
+        },
+        {
+            id: "listening-6",
+            title: "PTE Listening 6 – Answer PDF",
+            url: "https://www.dropbox.com/scl/fi/jaj4fr4vyq95k33g7srqq/Listening-6-Ans.pdf?rlkey=kct5t11ds0z3reh8ninvo94kh&st=i1duo9c2&raw=1",
+        },
+        {
+            id: "listening-7",
+            title: "PTE Listening 7 – Answer PDF",
+            url: "https://www.dropbox.com/scl/fi/oksknxanm8zzh1snai2q9/Listening-7-Ans.pdf?rlkey=lt0m4o9luv165ve8klzfgvh2z&st=q67r95ph&raw=1",
+        },
+        {
+            id: "listening-8",
+            title: "PTE Listening 8 – Answer PDF",
+            url: "https://www.dropbox.com/scl/fi/1722iibbchnsx39iobx0e/Listening-8-Ans.pdf?rlkey=r02wh1mu3kxc6g88khgiq4cqs&st=243esq08&raw=1",
+        },
     ],
     // speaking: [
     //     {
