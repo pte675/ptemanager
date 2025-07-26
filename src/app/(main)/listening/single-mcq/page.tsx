@@ -87,7 +87,7 @@ export default function SingleChoiceInterface() {
     const [showAnswers, setShowAnswers] = useState(false)
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [progress, setProgress] = useState(2)
-    const [totalQuestions, setTotalQuestions] = useState(20)
+    const [totalQuestions, setTotalQuestions] = useState(85)
     const [activeTab, setActiveTab] = useState("question")
     const [countdownValue, setCountdownValue] = useState(3)
     const [isCountingDown, setIsCountingDown] = useState(false)
