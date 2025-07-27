@@ -72,7 +72,7 @@ export default function ListeningFillBlanksInterface() {
     const [showAnswers, setShowAnswers] = useState(false)
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [progress, setProgress] = useState(2)
-    const [totalQuestions, setTotalQuestions] = useState(43)
+    const [totalQuestions, setTotalQuestions] = useState(210)
     const [activeTab, setActiveTab] = useState("exercise")
     const [remainingTime, setRemainingTime] = useState(0)
     const [isTimerRunning, setIsTimerRunning] = useState(false)

@@ -83,7 +83,7 @@ export default function HighlightCorrectSummaryInterface() {
     const [playbackRate, setPlaybackRate] = useState(1)
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [progress, setProgress] = useState(1)
-    const [totalQuestions, setTotalQuestions] = useState(16)
+    const [totalQuestions, setTotalQuestions] = useState(55)
     const [activeTab, setActiveTab] = useState("question")
     const [remainingTime, setRemainingTime] = useState(0)
     const [isTimerRunning, setIsTimerRunning] = useState(false)

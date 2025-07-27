@@ -95,7 +95,7 @@ export default function HighlightIncorrectWordInterface() {
     const [showAnswers, setShowAnswers] = useState(false)
     const [isBookmarked, setIsBookmarked] = useState(false)
     const [progress, setProgress] = useState(1)
-    const [totalQuestions, setTotalQuestions] = useState(250)
+    const [totalQuestions, setTotalQuestions] = useState(320)
     const [activeTab, setActiveTab] = useState("exercise")
     const [remainingTime, setRemainingTime] = useState(0)
     const [isTimerRunning, setIsTimerRunning] = useState(false)
